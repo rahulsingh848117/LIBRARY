@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator | S P Library</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <div class="brand">
+                <div class="logo-box">Logo</div>
+                <div>
+                    <div class="site-name">S P LIBRARY</div>
+                    <div style="font-size:.85rem; color: #7a5a2b;">Study plans, bookings & pricing</div>
+                </div>
+            </div>
+
+            <nav class="nav" aria-label="Main navigation" id="main-nav">
+                <a href="index.html">Home</a>
+                <a href="#calculator">Calculator</a>
+                <a href="#booking">Booking</a>
+                <a href="#info">Info</a>
+            </nav>
+
+            <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="right-controls">
+                <div class="theme-selector-wrapper">
+                    <label class="theme-selector-label">🎨</label>
+                    <select id="theme-selector">
+                        <option value="default">Default</option>
+                        <option value="dark">Dark</option>
+                        <option value="pink">Pink</option>
+                        <option value="skyblue">Sky</option>
+                        <option value="baghwa">Orange</option>
+                    </select>
+                </div>
+                <a class="cta-link" href="index.html">Back to Home</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section" id="calculator">
+            <div class="container">
+                <span class="hero-badge">Personalize your study booking</span>
+                <h2>Fee Calculator & Booking</h2>
+                <p class="lead">Choose your preferred shift, duration, and optional discount. Add a booking to your cart and manage it locally in the browser.</p>
+                <div class="hero-grid">
+                    <div class="calculator-form card">
+                        <div class="form-group">
+                            <label for="shift-select">Select Shift</label>
+                            <select id="shift-select" class="form-control">
+                                <option value="">-- Choose a Shift --</option>
+                                <option value="6-10|249|4|fixed">6 AM - 10 AM (4 hrs) · ₹249 · Fixed</option>
+                                <option value="6-14|599|8|fixed">6 AM - 2 PM (8 hrs) · ₹599 · Fixed</option>
+                                <option value="6-18|799|12|fixed">6 AM - 6 PM (12 hrs) · ₹799 · Fixed</option>
+                                <option value="10-14|449|4|random">10 AM - 2 PM (4 hrs) · ₹449 · Random</option>
+                                <option value="10-18|699|8|fixed">10 AM - 6 PM (8 hrs) · ₹699 · Fixed</option>
+                                <option value="14-18|399|4|random">2 PM - 6 PM (4 hrs) · ₹399 · Random</option>
+                                <option value="14-22|599|8|fixed">2 PM - 10 PM (8 hrs) · ₹599 · Fixed</option>
+                                <option value="16-22|349|6|fixed">4 PM - 10 PM (6 hrs) · ₹349 · Fixed</option>
+                                <option value="18-22|249|4|random">6 PM - 10 PM (4 hrs) · ₹249 · Random</option>
+                                <option value="6-22|899|16|fixed">6 AM - 10 PM (16 hrs) · ₹899 · Fixed</option>
+                                <option value="22-530|399|7.5|fixed">10 PM - 5:30 AM (7.5 hrs) · ₹399 · Fixed</option>
+                            </select>
+                        </div>
+                        <div class="seat-info">
+                            <div id="seat-type" class="seat-badge">Select a shift to see seat type</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <div class="button-group">
+                                <button class="duration-btn active" data-duration="30">1 Month</button>
+                                <button class="duration-btn" data-duration="90">3 Months</button>
+                                <button class="duration-btn" data-duration="180">6 Months</button>
+                                <button class="duration-btn" data-duration="365">1 Year</button>
+                            </div>
+                            <p class="field-help">Package totals use the shift rate multiplied by the selected package length: 1 Month = 1×, 3 Months = 3×, 6 Months = 6×, 1 Year = 12×.</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Discount</label>
+                            <div class="discount-config">
+                                <input type="checkbox" id="use-discount" class="discount-checkbox">
+                                <label for="use-discount" class="discount-label">Enable Custom Discount</label>
+                            </div>
+                            <div id="discount-inputs" class="discount-inputs hidden">
+                                <input type="number" id="discount-percent" placeholder="Discount %" min="0" max="100" value="0">
+                                <input type="text" id="discount-label" placeholder="Discount Name">
+                            </div>
+                        </div>
+                        <div class="results-box">
+                            <div class="result-row">
+                                <span class="result-label">Shift Rate:</span>
+                                <span id="daily-rate" class="result-value">₹0</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Duration:</span>
+                                <span id="duration-text" class="result-value">1 Month</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Subtotal:</span>
+                                <span id="subtotal" class="result-value">₹0</span>
+                            </div>
+                            <div id="discount-row" class="result-row hidden">
+                                <span class="result-label" id="discount-label-display">Discount:</span>
+                                <span id="discount-amount" class="result-value discount-amt">-₹0</span>
+                            </div>
+                            <div class="result-row total">
+                                <span class="result-label">Total Amount:</span>
+                                <span id="total-amount" class="result-value-total">₹0</span>
+                            </div>
+                        </div>
+                        <button id="add-to-cart" class="btn-primary">Proceed to Booking Form</button>
+                    </div>
+                    <div class="card" id="booking">
+                        <h3>Your Booking Cart</h3>
+                        <p class="lead">Saved locally in your browser. Remove items or clear the cart anytime.</p>
+                        <div id="booking-summary" class="booking-summary hidden">
+                            <div class="summary-item">
+                                <span>Total Bookings:</span>
+                                <span id="total-bookings" class="summary-value">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Total Amount:</span>
+                                <span id="booking-total" class="summary-value">₹0</span>
+                            </div>
+                            <button id="clear-bookings" class="btn-secondary" style="width:100%;">Clear All Bookings</button>
+                        </div>
+                        <div id="booking-list" class="booking-list">
+                            <p class="empty-message">No bookings yet. Add a plan from the calculator above.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="info">
+            <div class="container">
+                <h2>Library Info</h2>
+                <p class="lead">S P Library offers all essential amenities for focused study and exam preparation.</p>
+                <div class="grid-3">
+                    <div class="card">
+                        <h3>Location</h3>
+                        <p>Infront of SDO Residence, Khaja Sarai, Benta, Laheriasarai, Darbhanga, Bihar 846002.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Contact</h3>
+                        <p>Phone: +91 98354 40799<br>Alternate: +91 94710 74457</p>
+                    </div>
+                    <div class="card">
+                        <h3>Hours</h3>
+                        <p>Open 24 hours for serious students. Ideal for both day and night study sessions.</p>
+                    </div>
+                </div>
+                <div class="feature-list" style="margin-top: 24px;">
+                    <div class="feature-item">
+                        <div class="feature-icon">⭐</div>
+                        <div class="feature-content">
+                            <h4>4.5 Google Rating</h4>
+                            <p>Established reputation for a disciplined study environment.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-content">
+                            <h4>Fixed & Random Seat Notice</h4>
+                            <p>Fixed seats available for longer shifts; short shifts receive daily spot allocation.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🗺️</div>
+                        <div class="feature-content">
+                            <h4>Google Maps Link</h4>
+                            <p>Embed includes direct location access for easy navigation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="map">
+            <div class="container">
+                <h2>Find Us Easily</h2>
+                <p class="lead">Open the map for directions and visit the library without delay.</p>
+                <iframe class="map-embed" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3597.9847573821976!2d85.90579!3d26.123674!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39edb9327091d627%3A0x440876a55a5bb18f!2sS%20P%20LIBRARY!5e0!3m2!1sen!2sin!4v1234567890" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <p class="text-center" style="margin-top:20px;"><a href="https://www.google.com/maps/place/S+P+LIBRARY/@26.1236741,85.9082912,731m/data=!3m2!1e3!4b1!4m6!3m5!1s0x39edb9327091d627:0x440876a55a5bb18f!8m2!3d26.1236741!4d85.9082912!16s%2Fg%2F11ygs88z9t" target="_blank" class="map-link">Open Full Google Maps</a></p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 S P Library. All rights reserved.</p>
+            <p>Call: +91 98354 40799 • +91 94710 74457</p>
+        </div>
+    </footer>
+    <script src="hamburger.js"></script>
+    <script src="navigation.js"></script>
+    <script src="header-widgets.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

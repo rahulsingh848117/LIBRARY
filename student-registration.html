@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration | S P Library</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <script src="api-client.js"></script>
+    <script src="admin-auth.js"></script>
+    <script>adminAuth.requireAdmin();</script>
+    <header class="header">
+        <div class="container header-inner">
+            <div class="brand">
+                <div class="logo-box">
+                    <a href="index.html" aria-label="S P Library home">
+                        <img src="assets/Logo%20Library_page-0001.jpg" alt="S P Library logo">
+                    </a>
+                </div>
+                <div>
+                    <div class="site-name">S P LIBRARY</div>
+                    <div style="font-size:.85rem; color: #7a5a2b;">Admin student registration</div>
+                </div>
+            </div>
+
+            <nav class="nav" aria-label="Main navigation" id="main-nav">
+                <a href="index.html">Home</a>
+                <a href="booking.html">Booking</a>
+                <a id="nav-self-register" href="student-registration.html" style="display:none">Register</a>
+            </nav>
+
+            <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="right-controls">
+                <div class="theme-selector-wrapper">
+                    <label class="theme-selector-label">🎨</label>
+                    <select id="theme-selector">
+                        <option value="default">Default</option>
+                        <option value="dark">Dark</option>
+                        <option value="pink">Pink</option>
+                        <option value="skyblue">Sky</option>
+                        <option value="baghwa">Orange</option>
+                    </select>
+                </div>
+                <a class="cta-link" href="index.html">Back to Home</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <span class="hero-badge">Admin-only registration</span>
+                <h2>Register a New Student</h2>
+                <p class="lead">Use this form to register students. Only "Name" and "Phone Number" are required; all other fields are optional. Data is saved locally in your browser storage.</p>
+
+                <div class="booking-form-grid">
+                    <div class="form-card">
+                        <h3>Student Details</h3>
+                        <form id="student-registration-form">
+                            <div class="booking-form-row">
+                                <label for="student-name">Student Name</label>
+                                <input type="text" id="student-name" placeholder="Enter student name" required>
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="father-name">Father's Name</label>
+                                <input type="text" id="father-name" placeholder="Enter father's name">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="gender">Gender</label>
+                                <select id="gender">
+                                    <option value="">Select gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" placeholder="Enter mobile number" required>
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="parent-phone">Parents' Phone Number</label>
+                                <input type="tel" id="parent-phone" placeholder="Enter parent or guardian phone number">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" placeholder="you@example.com">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="adhar-number">Aadhar Number</label>
+                                <input type="text" id="adhar-number" placeholder="Enter Aadhaar number">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="dob">Date of Birth</label>
+                                <input type="date" id="dob">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="join-date">Date of Joining</label>
+                                <input type="date" id="join-date">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="exam-preparation">Exam Preparation For</label>
+                                <input type="text" id="exam-preparation" placeholder="e.g. NEET, JEE, UPSC, Board Exams">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="seat-section">Seat Section</label>
+                                <input type="text" id="seat-section" placeholder="e.g. A, B, C, D">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="seat-allocated">Seat Allocated</label>
+                                <input type="text" id="seat-allocated" placeholder="e.g. A1, B5, C10">
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="seat-type">Seat Type</label>
+                                <select id="seat-type">
+                                    <option value="">Select seat type</option>
+                                    <option value="Fixed">Fixed</option>
+                                    <option value="Unfixed">Unfixed</option>
+                                </select>
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="status">Status</label>
+                                <select id="status">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="booking-form-row">
+                                <label for="address">Address</label>
+                                <textarea id="address" rows="4" placeholder="Enter address or city"></textarea>
+                            </div>
+                            <button type="submit" class="btn-success">Register Student</button>
+                        </form>
+                    </div>
+
+                    <div class="booking-summary-card" id="registration-summary">
+                        <h3>Registration Status</h3>
+                        <div id="summary-content">
+                            <p class="text-center">Fill the student registration details and click <strong>Register Student</strong>.</p>
+                        </div>
+                        <div id="registration-confirmation" class="confirmation-card" style="display:none; margin-top:20px;">
+                            <h4>Student Registered</h4>
+                            <p>The student details have been recorded successfully. You can continue registering another student.</p>
+                        </div>
+                        <div id="registration-api-error" style="display:none; margin-top:12px; padding:10px; border-radius:8px; background:#fff3cd; border:1px solid #ffeeba; color:#856404;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2>Registered Students</h2>
+                <p class="lead">All registered student records are saved locally in your browser.</p>
+                <div class="students-management">
+                    <div class="management-actions">
+                        <button id="download-json-btn" class="btn-secondary">Download as JSON</button>
+                        <button id="download-csv-btn" class="btn-secondary">Download as CSV</button>
+                        <button id="clear-all-btn" class="btn-danger">Clear All Data</button>
+                           <button id="import-json-btn" class="btn-secondary">📤 Import JSON</button>
+                           <input id="import-json-input" type="file" accept="application/json" style="display:none">
+                    </div>
+                    <div id="students-table-container" style="margin-top: 20px;">
+                        <p class="text-center">No students registered yet.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 S P Library. All rights reserved.</p>
+            <p>Call: +91 98354 40799 • +91 94710 74457</p>
+        </div>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="navigation.js"></script>
+    <script src="header-widgets.js"></script>
+    <script src="admin-auth.js"></script>
+    <script src="admin-header.js"></script>
+    <script src="hamburger.js"></script>
+    <script src="student-registration.js"></script>
+</body>
+</html>

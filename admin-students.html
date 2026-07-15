@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Manage Students | S P Library</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+        .students-table{width:100%;border-collapse:collapse}
+        .students-table th, .students-table td{padding:10px;border-bottom:1px solid rgba(0,0,0,0.06);text-align:left}
+        .action-btn{padding:6px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);cursor:pointer}
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <div class="brand">
+                <div class="logo-box">
+                    <a href="index.html" aria-label="S P Library home">
+                        <img src="assets/Logo%20Library_page-0001.jpg" alt="S P Library logo">
+                    </a>
+                </div>
+                <div>
+                    <div class="site-name">S P LIBRARY</div>
+                    <div style="font-size:.85rem; color: #7a5a2b;">Student Management</div>
+                </div>
+            </div>
+
+            <nav class="nav" aria-label="Main navigation" id="main-nav">
+                <a href="admin-dashboard.html">Dashboard</a>
+                <a href="student-registration.html">Register Student</a>
+            </nav>
+
+            <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="right-controls">
+                <div class="theme-selector-wrapper">
+                    <label class="theme-selector-label">🎨</label>
+                    <select id="theme-selector">
+                        <option value="default">Default</option>
+                        <option value="dark">Dark</option>
+                        <option value="pink">Pink</option>
+                        <option value="skyblue">Sky</option>
+                        <option value="baghwa">Orange</option>
+                    </select>
+                </div>
+                <a class="cta-link" id="logout-link" href="#">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="container">
+                <h2>Students</h2>
+                
+                <!-- Student Detail Search Box -->
+                <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 2px solid rgba(0,0,0,0.05)">
+                    <h3 style="margin-top: 0; color: #2c3e50; margin-bottom: 16px;">🔍 Quick Student Lookup</h3>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label for="lookup-student-id" style="display: block; font-weight: 600; margin-bottom: 6px; color: #2c3e50; font-size: 0.9rem;">Enter Student ID or Name</label>
+                            <input id="lookup-student-id" placeholder="Search by ID, name, or phone..." style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 2px solid rgba(0,0,0,0.1); font-size: 0.95rem; transition: all 0.3s;">
+                        </div>
+                        <button id="lookup-student-btn" style="padding: 12px 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.3s;">Search</button>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <input id="search-input" placeholder="Search name, phone, aadhar" style="flex:1;padding:10px;border-radius:12px;border:1px solid rgba(0,0,0,0.08)">
+                    <select id="status-filter">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                    <select id="seat-filter">
+                        <option value="">All Seat Types</option>
+                        <option value="Fixed">Fixed</option>
+                        <option value="Unfixed">Unfixed</option>
+                    </select>
+                    <select id="exam-filter">
+                        <option value="">All Exams</option>
+                    </select>
+                    <button id="export-json" class="action-btn">Export JSON</button>
+                    <button id="export-csv" class="action-btn">Export CSV</button>
+                    <button id="print-list" class="action-btn" style="background:#2ecc71;color:white;border:none;padding:8px 12px;border-radius:8px;">Print</button>
+                    <button id="apply-filters" class="action-btn" style="background:#00bcd4;color:white;border:none;padding:8px 12px;border-radius:8px;">Apply Filters</button>
+                </div>
+
+                <div id="students-list-container">
+                    <table class="students-table" id="students-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Seat</th>
+                                <th>Seat Type</th>
+                                <th>Status</th>
+                                <th>Exam</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit modal -->
+    <div id="edit-modal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:1200">
+        <div class="modal-card" style="background:#fff;border-radius:12px;padding:18px;max-width:720px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,0.12)">
+            <h3>Edit Student</h3>
+            <form id="edit-form">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <input id="modal-name" placeholder="Student name" required>
+                    <input id="modal-phone" placeholder="Phone" required>
+                    <input id="modal-adhar" placeholder="Aadhaar">
+                    <input id="modal-dob" placeholder="DOB">
+                    <input id="modal-joinDate" placeholder="Joining Date">
+                    <input id="modal-seat" placeholder="Seat allocated">
+                    <select id="modal-seatType"><option value="">Seat Type</option><option value="Fixed">Fixed</option><option value="Unfixed">Unfixed</option></select>
+                    <select id="modal-status"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+                    <input id="modal-exam" placeholder="Exam preparation">
+                    <input id="modal-address" placeholder="Address">
+                </div>
+                <div style="margin-top:12px;text-align:right">
+                    <button type="button" id="modal-cancel" class="action-btn">Cancel</button>
+                    <button type="submit" id="modal-save" class="action-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div id="student-detail-modal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1300;overflow-y:auto">
+        <div class="modal-card" style="background:#fff;border-radius:16px;padding:28px;max-width:900px;width:95%;box-shadow:0 20px 60px rgba(0,0,0,0.3);margin:20px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+                <h2 style="margin:0;color:#2c3e50">Student Details</h2>
+                <button type="button" id="detail-modal-close" style="background:none;border:none;font-size:28px;cursor:pointer;color:#999">&times;</button>
+            </div>
+            
+            <div id="student-detail-content"></div>
+        </div>
+    </div>
+
+    <!-- Payment Recording Modal -->
+    <div id="payment-modal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1400;overflow-y:auto">
+        <div class="modal-card" style="background:#fff;border-radius:16px;padding:28px;max-width:600px;width:95%;box-shadow:0 20px 60px rgba(0,0,0,0.3);margin:20px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+                <h2 style="margin:0;color:#2c3e50">💳 Record Payment</h2>
+                <button type="button" id="payment-modal-close" style="background:none;border:none;font-size:28px;cursor:pointer;color:#999">&times;</button>
+            </div>
+            
+            <form id="payment-form">
+                <div style="background:#f0f4ff;padding:16px;border-radius:10px;margin-bottom:20px;border-left:4px solid #667eea">
+                    <div style="font-size:0.9rem;color:#666;margin-bottom:4px">Recording Payment For:</div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#2c3e50" id="payment-student-name"></div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Amount Paid *</label>
+                        <input id="payment-amount" type="number" placeholder="0.00" step="0.01" min="0" required style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Payment Date *</label>
+                        <input id="payment-date" type="date" required style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Payment Status *</label>
+                    <select id="payment-status" required style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box">
+                        <option value="Paid">✓ Paid</option>
+                        <option value="Partial">◐ Partial</option>
+                        <option value="Pending">⏱ Pending</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Invoice Number</label>
+                    <input id="payment-invoice" type="text" placeholder="INV-XXXX" style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box">
+                </div>
+
+                <div style="margin-bottom:24px">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Notes</label>
+                    <textarea id="payment-note" placeholder="Any additional notes..." style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box;min-height:80px;resize:vertical"></textarea>
+                </div>
+
+                <div style="display:flex;gap:10px;border-top:2px solid rgba(0,0,0,0.05);padding-top:20px">
+                    <button type="submit" style="flex:1;padding:12px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.95rem;transition:all 0.3s">💾 Save Payment</button>
+                    <button type="button" id="payment-cancel-btn" style="flex:1;padding:12px;background:#95a5a6;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.95rem">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 S P Library. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="theme.js"></script>
+    <script src="api-client.js"></script>
+    <script src="api-data-manager.js"></script>
+    <script src="navigation.js"></script>
+    <script src="header-widgets.js"></script>
+    <script src="admin-auth.js"></script>
+    <script src="admin-header.js"></script>
+    <script src="hamburger.js"></script>
+    <script src="admin-students.js"></script>
+</body>
+</html>

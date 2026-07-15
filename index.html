@@ -1,0 +1,323 @@
+﻿< !DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S P Library | Study Space in Laheriasarai</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <div class="brand">
+                <div class="logo-box">
+                    <a href="index.html" aria-label="S P Library home">
+                        <img src="assets/Logo%20Library_page-0001.jpg" alt="S P Library logo">
+                    </a>
+                </div>
+                <div>
+                    <div class="site-name">S P LIBRARY</div>
+                    <div style="font-size:.85rem; color: #5b421d;">Open 24 Hours • Darbhanga, Bihar</div>
+                </div>
+            </div>
+`       
+            <nav class="nav" aria-label="Main navigation" id="main-nav">
+                <a href="#about">About</a>
+                <a href="#features">Features</a>
+                <a href="#plans">Shifts</a>
+                <a href="#info">Info</a>
+                <a href="#map">Map</a>
+                <a id="nav-register-link" href="student-registration.html" style="display:none">Register</a>
+                <a href="admin-login.html" class="admin-link">Admin</a>
+            </nav>
+
+            <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+ 
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="right-controls">
+                <div class="theme-selector-wrapper">
+                    <label class="theme-selector-label">🎨</label>
+                    <select id="theme-selector">
+                        <option value="default">Default</option>
+                        <option value="dark">Dark</option>
+                        <option value="pink">Pink</option>
+                        <option value="skyblue">Sky</option>
+                        <option value="baghwa">Orange</option>
+                    </select>
+                </div>
+                <a class="cta-link primary" href="booking.html">Booking</a>
+                <a id="header-logout" class="cta-link" href="#" style="display:none">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container hero-inner">
+                <div class="hero-content">
+                    <div class="hero-shloka" role="note" aria-label="Sanskrit shloka">
+                        <p class="shloka-text">कर्मण्येवाधिकारस्ते मा फलेषु कदाचन</p>
+                        <p class="shloka-meaning">You have a right to perform your prescribed duty, but you are not entitled to the fruits of action.</p>
+                    </div>
+                    <!-- Notices Section -->
+                    <div class="hero-notices" id="hero-notices-container"></div>
+                    <h1 class="hero-title">Focused<br><span>Study Support</span> for Competitive Success</h1>
+                    <p class="hero-text">S P Library is a dedicated self-study environment tailored for competitive exam aspirants. Fixed seats are available for long shifts, and flexible plans are built to fit serious study routines.</p>
+                    <div class="hero-buttons">
+                        <a class="cta-link" href="booking.html">Start Booking</a>
+                        <a class="cta-link" href="#plans">View Shifts</a>
+                    </div>
+                    <div class="hero-links">
+                        <a class="hero-secondary" href="https://wa.me/8521933770" target="_blank" rel="noopener noreferrer">
+                            <span>Chat on WhatsApp</span>
+                            <span class="hero-icon">💬</span>
+                        </a>
+                        <a class="hero-secondary" href="https://maps.app.goo.gl/vKs8UkZB4C599YHR6" target="_blank" rel="noopener noreferrer">
+                            <span>Open Location</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <img src="assets/WhatsApp%20Image%202026-06-04%20at%2010.13.15%20AM.jpeg" alt="S P Library study area">
+                    <div class="hero-visual-overlay" aria-hidden="true"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Info section moved here from calculator page -->
+        <section class="section" id="info">
+            <div class="container">
+                <h2>Library Info</h2>
+                <p class="lead">S P Library offers all essential amenities for focused study and exam preparation.</p>
+                <div class="grid-3">
+                    <div class="card">
+                        <h3>Location</h3>
+                        <p>Infront of SDO Residence, Khaja Sarai, Benta, Laheriasarai, Darbhanga, Bihar 846002.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Contact</h3>
+                        <p>Phone: +91 98354 40799<br>Alternate: +91 94710 74457</p>
+                    </div>
+                    <div class="card">
+                        <h3>Hours</h3>
+                        <p>Open 24 hours for serious students. Ideal for both day and night study sessions.</p>
+                    </div>
+                </div>
+                <div class="feature-list" style="margin-top: 24px;">
+                    <div class="feature-item">
+                        <div class="feature-icon">⭐</div>
+                        <div class="feature-content">
+                            <h4>4.5 Google Rating</h4>
+                            <p>Established reputation for a disciplined study environment.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-content">
+                            <h4>Fixed & Random Seat Notice</h4>
+                            <p>Fixed seats available for longer shifts; short shifts receive daily spot allocation.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🗺️</div>
+                        <div class="feature-content">
+                            <h4>Google Maps Link</h4>
+                            <p>Embed includes direct location access for easy navigation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="about" class="section">
+            <div class="container">
+                <h2>Why Choose S P Library?</h2>
+                <p class="lead">Designed for dedicated learners, our library offers a blend of structure and flexibility. With 24/7 access, fixed seat support for longer shifts, and a calm study environment, it’s the perfect space to power through preparation.</p>
+                <div class="grid-3">
+                    <div class="card">
+                        <h3>24/7 Access</h3>
+                        <p>Study whenever you want. The space stays open around the clock so you can make the most of your study schedule.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Fixed Seats for Long Shifts</h3>
+                        <p>Any shift longer than 5 hours gets a fixed seat, giving constant comfort and reliability.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Peak-Time Management</h3>
+                        <p>Short shifts may receive random seat assignment due to higher demand during noon and evening peak hours.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="section">
+            <div class="container">
+                <h2>Core Features</h2>
+                <p class="lead">Everything here is optimized for a focused, disciplined study routine.</p>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">❄️</div>
+                        <div class="feature-content">
+                            <h4>Air Conditioned Environment</h4>
+                            <p>Comfortable study areas with stable cooling throughout the day and night.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔌</div>
+                        <div class="feature-content">
+                            <h4>Dedicated Power Points</h4>
+                            <p>Every seat supports laptop charging and uninterrupted study flow.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🌐</div>
+                        <div class="feature-content">
+                            <h4>Fast Internet</h4>
+                            <p>High-speed connection for lectures, research, and online study material access.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🧘</div>
+                        <div class="feature-content">
+                            <h4>Quiet Focus Policy</h4>
+                            <p>A calm, distraction-free environment to help you concentrate deeply during every shift.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-content">
+                            <h4>Reserved Study Zones</h4>
+                            <p>Organized seating across sections so you can find the spot that suits your rhythm.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💧</div>
+                        <div class="feature-content">
+                            <h4>Drinking Water Available</h4>
+                            <p>Study longer with chilled RO water available on site.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="plans" class="section">
+            <div class="container">
+                <h2>Shift Plans</h2>
+                <p class="lead">Choose from the most commonly requested study blocks. Fixed seat is available for every shift longer than 5 hours.</p>
+                <div class="plan-grid">
+                    <div class="plan-card">
+                        <h4>6 AM - 10 AM</h4>
+                        <span>4 hrs • ₹249</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>6 AM - 2 PM</h4>
+                        <span>8 hrs • ₹599</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>6 AM - 6 PM</h4>
+                        <span>12 hrs • ₹799</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>10 AM - 2 PM</h4>
+                        <span>4 hrs • ₹449</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>10 AM - 6 PM</h4>
+                        <span>8 hrs • ₹699</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>2 PM - 6 PM</h4>
+                        <span>4 hrs • ₹399</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>2 PM - 10 PM</h4>
+                        <span>8 hrs • ₹599</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>4 PM - 10 PM</h4>
+                        <span>6 hrs • ₹349</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>6 PM - 10 PM</h4>
+                        <span>4 hrs • ₹249</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>6 AM - 10 PM</h4>
+                        <span>16 hrs • ₹899</span>
+                    </div>
+                    <div class="plan-card">
+                        <h4>10 PM - 5:30 AM</h4>
+                        <span>7.5 hrs • ₹399</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container section-highlight">
+                <div class="cta-grid">
+                    <div>
+                        <h2>Ready to calculate your plan?</h2>
+                        <p class="lead">Use the calculator page to choose your shift, duration, and discount. Then save your booking directly in the browser.</p>
+                    </div>
+                    <a class="cta-link" href="booking.html">Open Fee Calculator</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="map" class="section">
+            <div class="container">
+                <h2>Visit S P Library</h2>
+                <p class="lead">Direct link to Google Maps for directions and location details.</p>
+                <iframe class="map-embed" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3597.9847573821976!2d85.90579!3d26.123674!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39edb9327091d627%3A0x440876a55a5bb18f!2sS%20P%20LIBRARY!5e0!3m2!1sen!2sin!4v1234567890" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <p style="text-align:center; margin-top:18px;"><a href="https://maps.app.goo.gl/vKs8UkZB4C599YHR6" target="_blank" class="cta-link" style="padding:12px 20px; background:#ffffff; color:var(--bhagwa-dark); box-shadow: 0 14px 36px rgba(0,0,0,0.12);">Open Google Maps</a></p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h3>S P Library</h3>
+                <p>Focused study environment for competitive learners in Darbhanga. Open 24 hours with secure seating, fast internet, and a quiet work zone.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Location</h3>
+                <p>In front of SDO Residence, Khaja Sarai, Benta, Laheriasarai, Darbhanga, Bihar 846002</p>
+                <p><a href="https://maps.app.goo.gl/vKs8UkZB4C599YHR6" target="_blank" rel="noopener noreferrer">Open in Google Maps</a></p>
+            </div>
+            <div class="footer-col">
+                <h3>Contact</h3>
+                <p>Phone: <a href="tel:+919835440799">+91 98354 40799</a></p>
+                <p>Alternate: <a href="tel:+919471074457">+91 94710 74457</a></p>
+                <p>Email: <a href="mailto:info@splibrary.com">info@splibrary.com</a></p>
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <p>&copy; 2026 S P Library. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Right-side floating contact widgets removed per layout cleanup -->
+    <script src="theme.js"></script>
+    <script src="notices.js"></script>
+    <script src="navigation.js"></script>
+    <script src="header-widgets.js"></script>
+    <script src="script.js"></script>
+    <script src="admin-auth.js"></script>
+    <script src="admin-header.js"></script>
+    <script src="hamburger.js"></script>
+    <script>
+        // Initialize notices on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            noticeManager.render('hero-notices-container', 3);
+        });
+    </script>
+</body>
+</html>

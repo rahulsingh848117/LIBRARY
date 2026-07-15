@@ -35,6 +35,19 @@
         .filter-toolbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; padding: 16px; background: rgba(0,0,0,0.02); border-radius: 10px; align-items: center; }
         .filter-group { display: flex; gap: 8px; align-items: center; }
         .filter-label { font-size: 0.9rem; font-weight: 600; color: #666; }
+        .seat-matrix-controls { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; align-items: center; }
+        .seat-matrix-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+        .seat-box { border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 12px; min-height: 128px; display: flex; flex-direction: column; justify-content: space-between; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .seat-box.reserved { border-color: #2e7d32; background: linear-gradient(135deg, rgba(76,175,80,0.16), rgba(76,175,80,0.08)); }
+        .seat-box.empty { border-color: #c62828; background: linear-gradient(135deg, rgba(244,67,54,0.16), rgba(244,67,54,0.06)); }
+        .seat-box .seat-number { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+        .seat-box .seat-student { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+        .seat-box .seat-meta { font-size: 0.8rem; color: #666; }
+        .seat-box .seat-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.8); margin-top: 8px; }
+        .seat-list { display: flex; flex-direction: column; gap: 10px; }
+        .seat-list-item { border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 12px; background: #fff; display: flex; gap: 12px; align-items: center; }
+        .seat-list-item.reserved { border-color: #2e7d32; background: rgba(76,175,80,0.08); }
+        .seat-list-item.empty { border-color: #c62828; background: rgba(244,67,54,0.08); }
         .filter-input, .filter-select { padding: 8px 12px; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; font-size: 0.85rem; }
         .filter-input { min-width: 180px; }
         .filter-select { min-width: 120px; }
@@ -134,6 +147,7 @@
         <div class="admin-nav-tabs">
             <button class="admin-nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
             <button class="admin-nav-tab" data-tab="students" onclick="switchTab('students')">👥 Students</button>
+            <button class="admin-nav-tab" data-tab="seatmatrix" onclick="switchTab('seatmatrix')">🪑 Seat Matrix</button>
             <button class="admin-nav-tab" data-tab="deleted" onclick="switchTab('deleted')">🗑️ Deleted</button>
             <button class="admin-nav-tab" data-tab="payments" onclick="switchTab('payments')">💳 Payments</button>
             <button class="admin-nav-tab" data-tab="bookings" onclick="switchTab('bookings')">📋 Bookings</button>
@@ -148,6 +162,8 @@
             <div id="tab-dashboard" class="tab-content">
                 <h1>📊 Dashboard Overview</h1>
                 <p class="lead">Real-time summary of your library operations</p>
+
+                <div id="dashboard-error" style="display:none; padding:12px; border-radius:8px; margin-bottom:16px;"></div>
 
                 <div class="dashboard-stats">
                     <div class="stat-card">
@@ -184,6 +200,21 @@
                     <h3>📍 Section Capacity Breakdown</h3>
                     <div class="section-breakdown" id="section-breakdown">
                         <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Quick Student Lookup Section -->
+                <div class="dashboard-section">
+                    <h3>🔍 Quick Student Lookup</h3>
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 12px; padding: 20px; border: 2px solid rgba(0,0,0,0.05); margin-bottom: 20px;">
+                        <p style="margin-top: 0; color: #2c3e50; font-size: 0.9rem;">Search for any student by ID, name, or phone number to view their complete details and payment history.</p>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+                            <div style="flex: 1; min-width: 250px;">
+                                <label for="dashboard-lookup-student" style="display: block; font-weight: 600; margin-bottom: 6px; color: #2c3e50; font-size: 0.9rem;">Student ID, Name, or Phone</label>
+                                <input id="dashboard-lookup-student" placeholder="Enter student details..." style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 2px solid rgba(0,0,0,0.1); font-size: 0.95rem;">
+                            </div>
+                            <button id="dashboard-lookup-btn" style="padding: 12px 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.3s;">Search</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -230,6 +261,10 @@
                                 <div class="form-row">
                                     <label>Date of Birth</label>
                                     <input type="date" id="student-dob">
+                                </div>
+                                <div class="form-row">
+                                    <label>Date of Joining</label>
+                                    <input type="date" id="student-join-date">
                                 </div>
                                 <div class="form-row">
                                     <label>Address</label>
@@ -581,6 +616,35 @@
                 </div>
             </div>
 
+            <!-- Seat Matrix Tab -->
+            <div id="tab-seatmatrix" class="tab-content" style="display:none;">
+                <h1>🪑 Seat Matrix</h1>
+                <p class="lead">View seat occupancy by section in grid or list format. Reserved fixed seats are highlighted in green and open seats in red.</p>
+
+                <div class="dashboard-section">
+                    <div class="seat-matrix-controls">
+                        <div class="filter-group">
+                            <label class="filter-label">View</label>
+                            <div class="btn-group">
+                                <button class="btn-filter" onclick="setSeatMatrixView('grid')">Grid</button>
+                                <button class="btn-small btn-secondary" onclick="setSeatMatrixView('list')">List</button>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Section</label>
+                            <select class="filter-select" id="seat-matrix-section" onchange="setSeatMatrixSection(this.value)">
+                                <option value="all">All Sections</option>
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                                <option value="D">Section D</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="seat-matrix-container"></div>
+                </div>
+            </div>
+
             <!-- Reports Tab -->
             <div id="tab-reports" class="tab-content" style="display:none;">
                 <h1>📈 Reports & Analytics</h1>
@@ -623,6 +687,70 @@
         </div>
     </main>
 
+    <!-- Student Detail Modal (Dashboard) -->
+    <div id="dashboard-student-detail-modal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1300;overflow-y:auto">
+        <div class="modal-card" style="background:#fff;border-radius:16px;padding:28px;max-width:900px;width:95%;box-shadow:0 20px 60px rgba(0,0,0,0.3);margin:20px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+                <h2 style="margin:0;color:#2c3e50">Student Details</h2>
+                <button type="button" id="dashboard-detail-modal-close" style="background:none;border:none;font-size:28px;cursor:pointer;color:#999">&times;</button>
+            </div>
+            
+            <div id="dashboard-student-detail-content"></div>
+        </div>
+    </div>
+
+    <!-- Payment Recording Modal (Dashboard) -->
+    <div id="dashboard-payment-modal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1400;overflow-y:auto">
+        <div class="modal-card" style="background:#fff;border-radius:16px;padding:28px;max-width:600px;width:95%;box-shadow:0 20px 60px rgba(0,0,0,0.3);margin:20px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+                <h2 style="margin:0;color:#2c3e50">💳 Record Payment</h2>
+                <button type="button" id="dashboard-payment-modal-close" style="background:none;border:none;font-size:28px;cursor:pointer;color:#999">&times;</button>
+            </div>
+            
+            <form id="dashboard-payment-form">
+                <div style="background:#f0f4ff;padding:16px;border-radius:10px;margin-bottom:20px;border-left:4px solid #667eea">
+                    <div style="font-size:0.9rem;color:#666;margin-bottom:4px">Recording Payment For:</div>
+                    <div style="font-size:1.2rem;font-weight:700;color:#2c3e50" id="dashboard-payment-student-name"></div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Amount Paid *</label>
+                        <input id="dashboard-payment-amount" type="number" placeholder="0.00" step="0.01" min="0" required style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Payment Date *</label>
+                        <input id="dashboard-payment-date" type="date" required style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Payment Status *</label>
+                    <select id="dashboard-payment-status" required style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box">
+                        <option value="Paid">✓ Paid</option>
+                        <option value="Partial">◐ Partial</option>
+                        <option value="Pending">⏱ Pending</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Invoice Number</label>
+                    <input id="dashboard-payment-invoice" type="text" placeholder="INV-XXXX" style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box">
+                </div>
+
+                <div style="margin-bottom:24px">
+                    <label style="display:block;font-weight:600;margin-bottom:8px;color:#2c3e50">Notes</label>
+                    <textarea id="dashboard-payment-note" placeholder="Any additional notes..." style="width:100%;padding:12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;font-size:0.95rem;box-sizing:border-box;min-height:80px;resize:vertical"></textarea>
+                </div>
+
+                <div style="display:flex;gap:10px;border-top:2px solid rgba(0,0,0,0.05);padding-top:20px">
+                    <button type="submit" style="flex:1;padding:12px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.95rem;transition:all 0.3s">💾 Save Payment</button>
+                    <button type="button" id="dashboard-payment-cancel-btn" style="flex:1;padding:12px;background:#95a5a6;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.95rem">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="container">
             <p>&copy; 2026 S P Library. All rights reserved. | Admin Dashboard v2.0</p>
@@ -631,779 +759,12 @@
 
     <script src="theme.js"></script>
     <script src="api-client.js"></script>
+    <script src="api-data-manager.js"></script>
     <script src="navigation.js"></script>
     <script src="header-widgets.js"></script>
     <script src="admin-auth.js"></script>
     <script src="hamburger.js"></script>
 
-    <script>
-        // Admin Dashboard v2.0 - Complete Rewrite
-        const session = adminAuth.requireAdmin();
-        if (!session) throw new Error('Redirecting to login');
-
-        document.getElementById('admin-display-name').textContent = session.username;
-        document.getElementById('admin-display-role').textContent = session.role;
-
-        document.getElementById('logout-btn').addEventListener('click', (e) => {
-            e.preventDefault();
-            adminAuth.logout();
-        });
-
-        // ==================== Tab Switching ====================
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-            const targetTab = document.getElementById('tab-' + tabName);
-            if (targetTab) targetTab.style.display = 'block';
-            
-            document.querySelectorAll('.admin-nav-tab').forEach(btn => btn.classList.remove('active'));
-            const activeButton = document.querySelector('.admin-nav-tab[data-tab="' + tabName + '"]');
-            if (activeButton) activeButton.classList.add('active');
-
-            if (tabName === 'dashboard') loadDashboardData();
-            else if (tabName === 'students') loadStudentsData();
-            else if (tabName === 'payments') loadPaymentsData();
-            else if (tabName === 'bookings') loadBookingsData();
-            else if (tabName === 'notices') loadNoticesData();
-        }
-
-        // ==================== Data Management ====================
-        let allStudents = [];
-        let allPayments = [];
-        let allBookings = [];
-        let allNotices = [];
-        let allDeletedStudents = [];
-        let showStudentPhotos = false;
-        let selectedStudentPhotoData = '';
-        let currentPrintData = {
-            students: [],
-            deletedStudents: [],
-            payments: [],
-            bookings: [],
-            notices: [],
-            reports: null
-        };
-
-        async function loadDashboardData() {
-            try {
-                if (!apiClient.isEnabled) {
-                    loadLocalDashboard();
-                    return;
-                }
-
-                const summary = await apiClient.request('dashboardSummary', {}, { method: 'POST' });
-                if (summary.summary) {
-                    updateDashboardStats(summary.summary);
-                }
-
-                const paymentSummary = await apiClient.request('monthlyCollectionSummary', {}, { method: 'POST' });
-                if (paymentSummary.summary) {
-                    updatePaymentSummary(paymentSummary.summary);
-                }
-
-                const bookings = await apiClient.request('listBookings', {}, { method: 'POST' });
-                if (bookings.bookings) {
-                    document.getElementById('stat-bookings').textContent = bookings.bookings.filter(b => String(b.status || '').toUpperCase() === 'PENDING').length;
-                }
-            } catch (error) {
-                console.error('Dashboard load error:', error);
-                loadLocalDashboard();
-            }
-        }
-
-        async function loadStudentsData() {
-            try {
-                if (apiClient.isEnabled) {
-                    const response = await apiClient.request('listStudents', {}, { method: 'POST' });
-                    allStudents = response.students || [];
-                } else {
-                    allStudents = JSON.parse(localStorage.getItem('spLibraryStudentRegistrations') || '[]');
-                }
-                renderStudentsTable(allStudents);
-            } catch (error) {
-                console.error('Error loading students:', error);
-            }
-        }
-
-        async function loadDeletedStudentsData() {
-            try {
-                if (apiClient.isEnabled) {
-                    const response = await apiClient.request('listDeletedStudents', {}, { method: 'POST' });
-                    allDeletedStudents = response.deletedStudents || [];
-                } else {
-                    allDeletedStudents = [];
-                }
-                renderDeletedStudentsTable(allDeletedStudents);
-            } catch (error) {
-                console.error('Error loading deleted students:', error);
-            }
-        }
-
-        async function loadPaymentsData() {
-            try {
-                if (apiClient.isEnabled) {
-                    const response = await apiClient.request('listPayments', {}, { method: 'POST' });
-                    allPayments = response.payments || [];
-                    
-                    const summary = await apiClient.request('monthlyCollectionSummary', {}, { method: 'POST' });
-                    if (summary.summary) updatePaymentSummary(summary.summary);
-                }
-                renderPaymentsTable(allPayments);
-            } catch (error) {
-                console.error('Error loading payments:', error);
-            }
-        }
-
-        async function loadBookingsData() {
-            try {
-                if (apiClient.isEnabled) {
-                    const response = await apiClient.request('listBookings', {}, { method: 'POST' });
-                    allBookings = response.bookings || [];
-                }
-                renderBookingsTable(allBookings);
-            } catch (error) {
-                console.error('Error loading bookings:', error);
-            }
-        }
-
-        async function loadNoticesData() {
-            try {
-                if (apiClient.isEnabled) {
-                    const response = await apiClient.request('listNotices', {}, { method: 'POST' });
-                    allNotices = response.notices || [];
-                } else {
-                    allNotices = JSON.parse(localStorage.getItem('spLibraryNotices') || '[]');
-                }
-                renderNoticesList(allNotices);
-            } catch (error) {
-                console.error('Error loading notices:', error);
-            }
-        }
-
-        // ==================== Rendering Functions ====================
-        function renderStudentsTable(students) {
-            const tbody = document.getElementById('students-tbody');
-            currentPrintData.students = Array.isArray(students) ? students : [];
-            tbody.innerHTML = '';
-            
-            if (students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px; color: #999;">No students found</td></tr>';
-                return;
-            }
-
-            students.forEach(student => {
-                const row = document.createElement('tr');
-                const photoCell = showStudentPhotos && student.photoDriveUrl ? `<td><img src="${student.photoDriveUrl}" alt="${student.studentName}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;"></td>` : '';
-                row.innerHTML = `
-                    <td><strong>${student.studentName || '—'}</strong>${photoCell}</td>
-                    <td>${student.phone || '—'}</td>
-                    <td><strong>${student.currentSection || '—'}</strong></td>
-                    <td>${student.currentSeat || '—'}</td>
-                    <td><span class="badge ${student.status === 'Active' ? 'badge-success' : 'badge-danger'}">${student.status || '—'}</span></td>
-                    <td><span class="badge ${student.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning'}">${student.paymentStatus || '—'}</span></td>
-                    <td><div class="btn-group"><button class="btn-small btn-secondary" onclick="deleteStudent('${student.id}')">Delete</button></div></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function renderDeletedStudentsTable(students) {
-            const tbody = document.getElementById('deleted-students-tbody');
-            currentPrintData.deletedStudents = Array.isArray(students) ? students : [];
-            tbody.innerHTML = '';
-            if (!students || students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px; color: #999;">No deleted students found</td></tr>';
-                return;
-            }
-            students.forEach(student => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${student.studentName || '—'}</strong></td>
-                    <td>${student.phone || '—'}</td>
-                    <td>${student.currentSection || '—'}</td>
-                    <td>${student.currentSeat || '—'}</td>
-                    <td><span class="badge ${student.status === 'Active' ? 'badge-success' : 'badge-danger'}">${student.status || '—'}</span></td>
-                    <td>${student.deletedAt || '—'}</td>
-                    <td><button class="btn-small btn-primary" onclick="restoreStudent('${student.id}')">Restore</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function renderPaymentsTable(payments) {
-            const tbody = document.getElementById('payments-tbody');
-            currentPrintData.payments = Array.isArray(payments) ? payments : [];
-            tbody.innerHTML = '';
-            
-            if (payments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #999;">No payments found</td></tr>';
-                return;
-            }
-
-            payments.forEach(payment => {
-                const row = document.createElement('tr');
-                const due = parseFloat(payment.amount || 0) - parseFloat(payment.paidAmount || 0);
-                row.innerHTML = `
-                    <td><strong>${payment.studentName || '—'}</strong></td>
-                    <td>${payment.paymentDate || '—'}</td>
-                    <td>₹${payment.amount || 0}</td>
-                    <td style="color: #27ae60; font-weight: 600;">₹${payment.paidAmount || 0}</td>
-                    <td>${payment.mode || '—'}</td>
-                    <td><span class="badge ${payment.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning'}">${payment.paymentStatus || '—'}</span></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function renderBookingsTable(bookings) {
-            const tbody = document.getElementById('bookings-tbody');
-            currentPrintData.bookings = Array.isArray(bookings) ? bookings : [];
-            tbody.innerHTML = '';
-            
-            if (bookings.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #999;">No bookings found</td></tr>';
-                return;
-            }
-
-            bookings.forEach(booking => {
-                const badgeClass = booking.status === 'Pending' ? 'badge-warning' : booking.status === 'Approved' ? 'badge-success' : 'badge-danger';
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${booking.name || '—'}</strong></td>
-                    <td>${booking.phone || '—'}</td>
-                    <td>${booking.purpose || '—'}</td>
-                    <td>${booking.requestedSection || '—'}</td>
-                    <td><span class="badge ${badgeClass}">${booking.status || '—'}</span></td>
-                    <td>
-                        ${booking.status === 'Pending' ? `
-                            <button class="btn-small btn-primary" onclick="approveBooking('${booking.bookingId}')">Approve</button>
-                            <button class="btn-small btn-danger" onclick="rejectBooking('${booking.bookingId}')">Reject</button>
-                        ` : '—'}
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function renderNoticesList(notices) {
-            const list = document.getElementById('notices-list');
-            currentPrintData.notices = Array.isArray(notices) ? notices : [];
-            list.innerHTML = '';
-            
-            if (!notices || notices.length === 0) {
-                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>No notices yet</div>';
-                return;
-            }
-
-            notices.forEach(notice => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 4px;">${notice.title}</div>
-                    <div style="font-size: 0.85rem; color: #666; margin-bottom: 8px;">${(notice.content || '').substring(0, 80)}...</div>
-                    ${notice.expiryDate ? `<div style="font-size: 0.8rem; color: #999;">Expires: ${notice.expiryDate}</div>` : ''}
-                    <button class="btn-small btn-danger" onclick="deleteNotice('${notice.id}')" style="margin-top: 8px;">Delete</button>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        // ==================== Filter & Sort Functions ====================
-        function applyStudentFilters() {
-            const search = document.getElementById('search-students').value.toLowerCase();
-            const status = document.getElementById('filter-status').value;
-            const section = document.getElementById('filter-section').value;
-            const seat = document.getElementById('filter-seat').value.toLowerCase();
-            const seatType = document.getElementById('filter-seat-type').value;
-            const payment = document.getElementById('filter-payment').value;
-
-            let filtered = allStudents.filter(s => {
-                const matchSearch = !search || 
-                    (s.studentName || '').toLowerCase().includes(search) ||
-                    (s.phone || '').includes(search) ||
-                    (s.adharNumber || '').includes(search);
-                const matchStatus = !status || s.status === status;
-                const matchSection = !section || String(s.currentSection || '').toUpperCase() === section;
-                const matchSeat = !seat || String(s.currentSeat || '').toLowerCase().includes(seat);
-                const matchSeatType = !seatType || s.seatType === seatType;
-                const matchPayment = !payment || s.paymentStatus === payment;
-
-                return matchSearch && matchStatus && matchSection && matchSeat && matchSeatType && matchPayment;
-            });
-
-            renderStudentsTable(filtered);
-        }
-
-        function applyDeletedFilters() {
-            const search = document.getElementById('search-deleted').value.toLowerCase();
-            const section = document.getElementById('filter-deleted-section').value;
-            const seat = document.getElementById('filter-deleted-seat').value.toLowerCase();
-            const filtered = allDeletedStudents.filter(s => {
-                const matchSearch = !search || (s.studentName || '').toLowerCase().includes(search) || (s.phone || '').includes(search) || (s.adharNumber || '').includes(search);
-                const matchSection = !section || String(s.currentSection || '').toUpperCase() === section;
-                const matchSeat = !seat || String(s.currentSeat || '').toLowerCase().includes(seat);
-                return matchSearch && matchSection && matchSeat;
-            });
-            renderDeletedStudentsTable(filtered);
-        }
-
-        function applyPaymentFilters() {
-            const month = document.getElementById('filter-month').value;
-            const status = document.getElementById('filter-payment-status').value;
-            const mode = document.getElementById('filter-mode').value;
-
-            let filtered = allPayments.filter(p => {
-                const matchMonth = !month || p.paymentDate.startsWith(month);
-                const matchStatus = !status || p.paymentStatus === status;
-                const matchMode = !mode || p.mode === mode;
-
-                return matchMonth && matchStatus && matchMode;
-            });
-
-            renderPaymentsTable(filtered);
-        }
-
-        function applyBookingFilters() {
-            const status = document.getElementById('filter-booking-status').value;
-            const section = document.getElementById('filter-booking-section').value;
-            const search = document.getElementById('search-bookings').value.toLowerCase();
-
-            let filtered = allBookings.filter(b => {
-                const matchStatus = !status || b.status === status;
-                const matchSection = !section || b.requestedSection === section;
-                const matchSearch = !search || 
-                    (b.name || '').toLowerCase().includes(search) ||
-                    (b.phone || '').includes(search) ||
-                    (b.email || '').toLowerCase().includes(search);
-
-                return matchStatus && matchSection && matchSearch;
-            });
-
-            renderBookingsTable(filtered);
-        }
-
-        // Sort functions
-        let currentSort = { field: null, asc: true };
-
-        function sortStudents(field) {
-            currentSort.asc = currentSort.field === field ? !currentSort.asc : true;
-            currentSort.field = field;
-            
-            allStudents.sort((a, b) => {
-                const aVal = a[field] || '';
-                const bVal = b[field] || '';
-                return currentSort.asc ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
-            });
-            renderStudentsTable(allStudents);
-        }
-
-        function sortPayments(field) {
-            currentSort.asc = currentSort.field === field ? !currentSort.asc : true;
-            currentSort.field = field;
-            
-            allPayments.sort((a, b) => {
-                const aVal = a[field] || '';
-                const bVal = b[field] || '';
-                const aNum = parseFloat(aVal);
-                const bNum = parseFloat(bVal);
-                
-                if (!isNaN(aNum) && !isNaN(bNum)) {
-                    return currentSort.asc ? aNum - bNum : bNum - aNum;
-                }
-                return currentSort.asc ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
-            });
-            renderPaymentsTable(allPayments);
-        }
-
-        function sortBookings(field) {
-            currentSort.asc = currentSort.field === field ? !currentSort.asc : true;
-            currentSort.field = field;
-            
-            allBookings.sort((a, b) => {
-                const aVal = a[field] || '';
-                const bVal = b[field] || '';
-                return currentSort.asc ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
-            });
-            renderBookingsTable(allBookings);
-        }
-
-        // ==================== Action Functions ====================
-        async function approveBooking(bookingId) {
-            if (!confirm('Approve this booking?')) return;
-            try {
-                if (apiClient.isEnabled) {
-                    await apiClient.request('approveBooking', { bookingId, approvedBy: session.username }, { method: 'POST' });
-                }
-                alert('Booking approved!');
-                loadBookingsData();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        async function rejectBooking(bookingId) {
-            const reason = prompt('Enter rejection reason:');
-            if (!reason) return;
-            try {
-                if (apiClient.isEnabled) {
-                    await apiClient.request('rejectBooking', { bookingId, reason }, { method: 'POST' });
-                }
-                alert('Booking rejected!');
-                loadBookingsData();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        async function deleteNotice(id) {
-            if (!confirm('Delete this notice?')) return;
-            try {
-                if (apiClient.isEnabled) {
-                    await apiClient.request('deleteNotice', { id }, { method: 'POST' });
-                }
-                alert('Notice deleted!');
-                loadNoticesData();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        async function deleteStudent(id) {
-            if (!confirm('Delete this student and move them to the deleted list?')) return;
-            try {
-                if (apiClient.isEnabled) {
-                    await apiClient.request('deleteStudent', { id, deletedBy: session.username, reason: 'Deleted from admin panel' }, { method: 'POST' });
-                }
-                alert('Student deleted successfully.');
-                loadStudentsData();
-                loadDeletedStudentsData();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        async function restoreStudent(id) {
-            try {
-                if (apiClient.isEnabled) {
-                    await apiClient.request('restoreStudent', { id }, { method: 'POST' });
-                }
-                alert('Student restored successfully.');
-                loadDeletedStudentsData();
-                loadStudentsData();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        }
-
-        function toggleStudentPhotos() {
-            showStudentPhotos = !showStudentPhotos;
-            document.getElementById('toggle-photos-btn').textContent = showStudentPhotos ? '🖼️ Hide Photos' : '🖼️ Show Photos';
-            renderStudentsTable(allStudents);
-        }
-
-        function getCurrentExportData(viewName) {
-            if (viewName === 'students') return currentPrintData.students.length ? currentPrintData.students : allStudents;
-            if (viewName === 'deleted') return currentPrintData.deletedStudents.length ? currentPrintData.deletedStudents : allDeletedStudents;
-            if (viewName === 'payments') return currentPrintData.payments.length ? currentPrintData.payments : allPayments;
-            if (viewName === 'bookings') return currentPrintData.bookings.length ? currentPrintData.bookings : allBookings;
-            if (viewName === 'notices') return currentPrintData.notices.length ? currentPrintData.notices : allNotices;
-            if (viewName === 'reports') return currentPrintData.reports ? [currentPrintData.reports] : [];
-            return [];
-        }
-
-        function printCurrentView(viewName) {
-            const records = getCurrentExportData(viewName);
-            const titleMap = {
-                students: 'Students Report',
-                deleted: 'Deleted Students Report',
-                payments: 'Payments Report',
-                bookings: 'Bookings Report',
-                notices: 'Notices Report',
-                reports: 'Admin Report'
-            };
-            const title = titleMap[viewName] || 'Admin Report';
-            const printWindow = window.open('', '_blank', 'width=900,height=700');
-
-            if (!printWindow) {
-                alert('Please allow popups to print this report.');
-                return;
-            }
-
-            const rows = records.length ? records.map((record, index) => {
-                const values = Object.entries(record).map(([key, value]) => `<td>${String(value || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`).join('');
-                return `<tr>${values}</tr>`;
-            }).join('') : '<tr><td colspan="5">No data available for this view.</td></tr>';
-
-            const headers = records.length ? Object.keys(records[0]).map(key => `<th>${key}</th>`).join('') : '<th>No Data</th>';
-
-            printWindow.document.write(`
-                <html>
-                    <head>
-                        <title>${title}</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
-                            h1 { margin-bottom: 8px; }
-                            table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-                            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; font-size: 12px; }
-                            th { background: #f4f4f4; }
-                            .meta { color: #666; font-size: 13px; margin-bottom: 8px; }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>${title}</h1>
-                        <div class="meta">Generated on ${new Date().toLocaleString()}</div>
-                        <table>
-                            <thead><tr>${headers}</tr></thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    </body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
-            printWindow.close();
-        }
-
-        // ==================== Export Functions ====================
-        function exportStudentsData() {
-            const csv = convertToCSV(getCurrentExportData('students'));
-            downloadCSV(csv, 'students.csv');
-        }
-
-        function exportDeletedStudentsData() {
-            const csv = convertToCSV(getCurrentExportData('deleted'));
-            downloadCSV(csv, 'deleted-students.csv');
-        }
-
-        function exportPaymentsData() {
-            const csv = convertToCSV(getCurrentExportData('payments'));
-            downloadCSV(csv, 'payments.csv');
-        }
-
-        function exportBookingsData() {
-            const csv = convertToCSV(getCurrentExportData('bookings'));
-            downloadCSV(csv, 'bookings.csv');
-        }
-
-        function convertToCSV(data) {
-            if (!data || data.length === 0) return '';
-            const headers = Object.keys(data[0]);
-            const rows = data.map(obj => headers.map(h => `"${(obj[h] || '').toString().replace(/"/g, '""')}"`).join(','));
-            return [headers.join(','), ...rows].join('\n');
-        }
-
-        function downloadCSV(csv, filename) {
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }
-
-        function generateReport() {
-            const period = document.getElementById('report-period').value;
-            const revenue = allPayments.reduce((sum, payment) => sum + parseFloat(payment.paidAmount || 0), 0);
-            const expected = allPayments.reduce((sum, payment) => sum + parseFloat(payment.amount || 0), 0);
-            const avgPayment = allStudents.length ? revenue / allStudents.length : 0;
-            const collectionRate = expected > 0 ? (revenue / expected) * 100 : 0;
-            const occupancyRate = allStudents.length ? (allStudents.filter(student => String(student.currentSeat || '').trim()).length / allStudents.length) * 100 : 0;
-
-            document.getElementById('report-revenue').textContent = '₹' + revenue.toFixed(2);
-            document.getElementById('report-avg').textContent = '₹' + avgPayment.toFixed(2);
-            document.getElementById('report-rate').textContent = collectionRate.toFixed(1) + '%';
-            document.getElementById('report-occupancy').textContent = occupancyRate.toFixed(1) + '%';
-
-            currentPrintData.reports = {
-                period,
-                revenue: revenue.toFixed(2),
-                avgPayment: avgPayment.toFixed(2),
-                collectionRate: collectionRate.toFixed(1) + '%',
-                occupancyRate: occupancyRate.toFixed(1) + '%',
-                studentCount: allStudents.length,
-                paymentCount: allPayments.length,
-                generatedAt: new Date().toISOString()
-            };
-        }
-
-        function exportReport() {
-            generateReport();
-            const csv = convertToCSV(getCurrentExportData('reports'));
-            downloadCSV(csv, 'report.csv');
-        }
-
-        // ==================== Dashboard Stats ====================
-        function updateDashboardStats(summary) {
-            document.getElementById('stat-total').textContent = summary.totalStudents || 0;
-            document.getElementById('stat-active').textContent = `✓ Active: ${summary.activeStudents || 0}`;
-            document.getElementById('stat-inactive').textContent = `✗ Inactive: ${summary.inactiveStudents || 0}`;
-            document.getElementById('stat-seats').textContent = summary.seatsOccupied || 0;
-            document.getElementById('stat-paid').textContent = '₹' + (summary.monthlyCollection || 0);
-            document.getElementById('stat-due').textContent = `📌 Due: ₹${summary.monthlyDue || 0}`;
-
-            const breakdown = document.getElementById('section-breakdown');
-            breakdown.innerHTML = '';
-            if (summary.sectionSummary && Array.isArray(summary.sectionSummary)) {
-                summary.sectionSummary.forEach(sec => {
-                    const div = document.createElement('div');
-                    div.className = 'section-row';
-                    const capacity = sec.taken + sec.available;
-                    const percentage = capacity > 0 ? Math.round((sec.taken / capacity) * 100) : 0;
-                    div.innerHTML = `
-                        <div class="section-name">Section ${sec.section}</div>
-                        <div class="section-info">${sec.taken}/${capacity} (${percentage}%)</div>
-                        <div style="background: #e0e0e0; height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden;">
-                            <div style="background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary, var(--theme-primary))); height: 100%; width: ${percentage}%; transition: width 0.3s;"></div>
-                        </div>
-                    `;
-                    breakdown.appendChild(div);
-                });
-            }
-        }
-
-        function updatePaymentSummary(summary) {
-            const now = new Date();
-            document.getElementById('pm-month').textContent = `${summary.month}/${summary.year}`;
-            document.getElementById('pm-expected').textContent = '₹' + (summary.totalExpected || 0);
-            document.getElementById('pm-paid').textContent = '₹' + (summary.totalPaid || 0);
-            document.getElementById('pm-due').textContent = '₹' + (summary.totalDue || 0);
-            document.getElementById('pm-count').textContent = summary.paymentsCount || 0;
-        }
-
-        function loadLocalDashboard() {
-            const students = JSON.parse(localStorage.getItem('spLibraryStudentRegistrations') || '[]');
-            const total = students.length;
-            const active = students.filter(s => (s.status || 'Active') === 'Active').length;
-
-            updateDashboardStats({
-                totalStudents: total,
-                activeStudents: active,
-                inactiveStudents: total - active,
-                seatsOccupied: students.filter(s => s.seatAllocated && s.seatAllocated.trim()).length,
-                sectionSummary: []
-            });
-        }
-
-        // ==================== Form Submissions ====================
-        document.getElementById('student-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const studentData = {
-                studentName: document.getElementById('student-name').value.trim(),
-                phone: document.getElementById('student-phone').value.trim(),
-                adharNumber: document.getElementById('student-adhar').value.trim(),
-                fatherName: document.getElementById('student-father').value.trim(),
-                parentPhone: document.getElementById('student-parent-phone').value.trim(),
-                gender: document.getElementById('student-gender').value,
-                dob: document.getElementById('student-dob').value,
-                address: document.getElementById('student-address').value.trim(),
-                examPreparation: document.getElementById('student-exam').value.trim(),
-                currentSection: document.getElementById('student-section').value,
-                currentSeat: document.getElementById('student-seat').value.trim(),
-                seatType: document.getElementById('student-seat-type').value,
-                status: document.getElementById('student-status').value,
-                paymentStatus: document.getElementById('student-payment-status').value,
-                dueAmount: document.getElementById('student-due').value,
-                photoDriveUrl: selectedStudentPhotoData || ''
-            };
-
-            if (!studentData.studentName || !studentData.currentSection || !studentData.currentSeat) {
-                alert('Please fill student name, section, and seat number.');
-                return;
-            }
-
-            try {
-                if (apiClient.isEnabled) {
-                    if (selectedStudentPhotoData) {
-                        const photoResponse = await apiClient.request('uploadStudentPhoto', { dataUrl: selectedStudentPhotoData, fileName: `${studentData.studentName || 'student'}.png` }, { method: 'POST' });
-                        studentData.photoDriveUrl = photoResponse.photoUrl || '';
-                    }
-                    await apiClient.request('createStudent', { student: studentData }, { method: 'POST' });
-                }
-                document.getElementById('student-form').reset();
-                selectedStudentPhotoData = '';
-                document.getElementById('student-photo-preview').style.display = 'none';
-                alert('Student registered successfully!');
-                loadStudentsData();
-                loadDeletedStudentsData();
-            } catch (error) {
-                alert('Failed to register student: ' + error.message);
-            }
-        });
-
-        document.getElementById('student-photo').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => {
-                selectedStudentPhotoData = reader.result;
-                const preview = document.getElementById('student-photo-preview');
-                preview.innerHTML = `<img src="${reader.result}" style="max-width:160px; max-height:160px; border-radius:8px; object-fit:cover;">`;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        });
-
-        document.getElementById('notice-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = document.getElementById('notice-title').value.trim();
-            const content = document.getElementById('notice-content').value.trim();
-            const expiry = document.getElementById('notice-expiry').value;
-
-            if (!title || !content) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            try {
-                if (apiClient.isEnabled) {
-                    await apiClient.request('createNotice', { notice: { title, content, expiryDate: expiry } }, { method: 'POST' });
-                }
-                document.getElementById('notice-form').reset();
-                alert('Notice uploaded successfully!');
-                loadNoticesData();
-            } catch (error) {
-                alert('Failed to upload notice: ' + error.message);
-            }
-        });
-
-        document.getElementById('payment-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const student = document.getElementById('pay-student').value.trim();
-            const amount = parseFloat(document.getElementById('pay-amount').value);
-            const mode = document.getElementById('pay-mode').value;
-
-            if (!student || !amount || !mode) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            try {
-                if (apiClient.isEnabled) {
-                    await apiClient.request('createPayment', {
-                        payment: {
-                            studentId: student,
-                            studentName: student,
-                            amount: amount,
-                            paidAmount: amount,
-                            mode: mode,
-                            receivedBy: session.username,
-                            paymentStatus: 'Paid'
-                        }
-                    }, { method: 'POST' });
-                }
-                document.getElementById('payment-form').reset();
-                alert('Payment recorded successfully!');
-                loadPaymentsData();
-            } catch (error) {
-                alert('Failed to record payment: ' + error.message);
-            }
-        });
-
-        // ==================== Initialize ====================
-        loadDashboardData();
-    </script>
+    <script src="admin-dashboard.js"></script>
 </body>
 </html>
