@@ -225,6 +225,14 @@ function handleCreateStudent(student) {
 
     const nextId = lastId + 1;
 
+    const requestedSection = String(student.currentSection || '').trim().toUpperCase();
+    const requestedSeat = String(student.currentSeat || '').trim();
+    const isFixedSeat = String(student.seatType || '').trim().toLowerCase() === 'fixed';
+    if (isFixedSeat && requestedSection && requestedSeat) {
+      const assigned = rows.find(row => String(row.currentSection || '').trim().toUpperCase() === requestedSection && String(row.currentSeat || '').trim() === requestedSeat);
+      if (assigned) return { error: `Fixed seat ${requestedSection}-${requestedSeat} is already assigned to ${assigned.studentName || 'another student'}.` };
+    }
+
     const newStudent = {
       id: String(nextId),
       studentName: student.studentName || '',
@@ -236,6 +244,8 @@ function handleCreateStudent(student) {
       gender: student.gender || '',
       dob: student.dob || '',
       joinDate: student.joinDate || '',
+      monthlyFee: String(student.monthlyFee || ''),
+      nextDueDate: student.nextDueDate || '',
       address: student.address || '',
       examPreparation: student.examPreparation || '',
       currentSection: student.currentSection || '',
@@ -268,11 +278,19 @@ function handleUpdateStudent(student) {
   const index = rows.findIndex(row => String(row.id) === String(student.id));
   if (index === -1) return { error: 'Student not found' };
 
-  rows[index] = {
+  const updatedStudent = {
     ...rows[index],
     ...student,
     updatedAt: new Date().toISOString(),
   };
+  const requestedSection = String(updatedStudent.currentSection || '').trim().toUpperCase();
+  const requestedSeat = String(updatedStudent.currentSeat || '').trim();
+  const isFixedSeat = String(updatedStudent.seatType || '').trim().toLowerCase() === 'fixed';
+  if (isFixedSeat && requestedSection && requestedSeat) {
+    const assigned = rows.find((row, rowIndex) => rowIndex !== index && String(row.currentSection || '').trim().toUpperCase() === requestedSection && String(row.currentSeat || '').trim() === requestedSeat);
+    if (assigned) return { error: `Fixed seat ${requestedSection}-${requestedSeat} is already assigned to ${assigned.studentName || 'another student'}.` };
+  }
+  rows[index] = updatedStudent;
   writeRows(sheet, rows);
   return { student: rows[index] };
 }
@@ -340,18 +358,30 @@ function handleListDeletedStudents() {
 function handleCreatePayment(payment) {
   const sheet = getOrCreateSheet('Payments');
   const rows = getRows(sheet);
-  const dateValue = payment.paymentDate ? new Date(payment.paymentDate) : new Date();
+  const requestedMonth = parseInt(payment.month, 10);
+  const requestedYear = parseInt(payment.year, 10);
+  const dateValue = payment.paymentDate
+    ? new Date(payment.paymentDate)
+    : requestedMonth >= 1 && requestedMonth <= 12 && requestedYear >= 2020
+      ? new Date(requestedYear, requestedMonth - 1, 1)
+      : new Date();
   const amount = parseNumber(payment.amount);
   const paidAmount = parseNumber(payment.paidAmount);
   const newPayment = {
     paymentId: generateId('pay'),
     studentId: payment.studentId || '',
     studentName: payment.studentName || '',
+    fatherName: payment.fatherName || '',
+    joinDate: payment.joinDate || '',
+    currentSection: payment.currentSection || '',
+    currentSeat: payment.currentSeat || '',
     paymentDate: dateValue.toISOString().split('T')[0],
-    month: String(dateValue.getMonth() + 1),
-    year: String(dateValue.getFullYear()),
+    month: String(requestedMonth >= 1 && requestedMonth <= 12 ? requestedMonth : dateValue.getMonth() + 1),
+    year: String(requestedYear >= 2020 ? requestedYear : dateValue.getFullYear()),
     amount: String(amount),
     paidAmount: String(paidAmount),
+    dueAmount: String(parseNumber(payment.dueAmount)),
+    nextDueDate: payment.nextDueDate || '',
     paymentStatus: payment.paymentStatus || (paidAmount >= amount ? 'Paid' : 'Due'),
     mode: payment.mode || '',
     receivedBy: payment.receivedBy || '',
@@ -361,7 +391,63 @@ function handleCreatePayment(payment) {
   };
   rows.push(newPayment);
   writeRows(sheet, rows);
+  if (newPayment.nextDueDate) updateStudentNextDueDate(newPayment.studentId, newPayment.nextDueDate);
   return { payment: newPayment };
+}
+
+function updateStudentBalanceAfterPayment(studentId) {
+  if (!studentId) return null;
+
+  const studentsSheet = getOrCreateSheet('Students');
+  const students = getRows(studentsSheet);
+  const index = students.findIndex(row => String(row.id) === String(studentId));
+  if (index === -1) return null;
+
+  const student = students[index];
+  const monthlyFee = parseNumber(student.monthlyFee);
+  const joinDate = parseDateOnly(student.joinDate);
+  if (!monthlyFee || !joinDate) return student;
+
+  const payments = getRows(getOrCreateSheet('Payments'))
+    .filter(payment => String(payment.studentId) === String(studentId));
+  const completedMonths = getCompletedBillingMonths(joinDate, new Date());
+  const expected = monthlyFee * completedMonths;
+  const paid = payments.reduce((total, payment) => total + parseNumber(payment.paidAmount), 0);
+  const balance = expected - paid;
+  const status = balance > 0 ? 'Due' : balance < 0 ? 'Advance' : completedMonths === 0 ? 'Not Due Yet' : 'Paid';
+
+  students[index] = {
+    ...student,
+    dueAmount: String(Math.max(balance, 0)),
+    paymentStatus: status,
+    updatedAt: new Date().toISOString(),
+  };
+  writeRows(studentsSheet, students);
+  return students[index];
+}
+
+function updateStudentNextDueDate(studentId, nextDueDate) {
+  if (!studentId || !nextDueDate) return null;
+  const sheet = getOrCreateSheet('Students');
+  const rows = getRows(sheet);
+  const index = rows.findIndex(row => String(row.id) === String(studentId));
+  if (index === -1) return null;
+  rows[index] = { ...rows[index], nextDueDate, updatedAt: new Date().toISOString() };
+  writeRows(sheet, rows);
+  return rows[index];
+}
+
+function parseDateOnly(value) {
+  const text = String(value || '').trim();
+  if (!text) return null;
+  const date = new Date(text.indexOf('T') === -1 ? `${text}T00:00:00` : text);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getCompletedBillingMonths(joinDate, currentDate) {
+  let months = (currentDate.getFullYear() - joinDate.getFullYear()) * 12 + currentDate.getMonth() - joinDate.getMonth();
+  if (currentDate.getDate() < joinDate.getDate()) months--;
+  return Math.max(months, 0);
 }
 
 function handleUpdatePayment(payment) {
@@ -520,7 +606,8 @@ function handleUploadStudentPhoto(payload) {
   if (!dataUrl) return { error: 'Missing photo data' };
 
   const file = savePhotoDataUrl(dataUrl, fileName, mimeType);
-  return { fileId: file.getId(), photoDriveUrl: file.getUrl(), webViewLink: file.getUrl() };
+  const photoDriveUrl = `https://drive.google.com/uc?export=view&id=${file.getId()}`;
+  return { fileId: file.getId(), photoDriveUrl, webViewLink: file.getUrl() };
 }
 
 function savePhotoDataUrl(dataUrl, fileName, mimeType) {
@@ -541,9 +628,9 @@ function getPhotoFolder() {
 
 function getHeadersForSheet(name) {
   const headers = {
-    Students: ['id', 'studentName', 'phone', 'adharNumber', 'email', 'fatherName', 'parentPhone', 'gender', 'dob', 'joinDate', 'address', 'examPreparation', 'currentSection', 'currentSeat', 'seatType', 'status', 'paymentStatus', 'dueAmount', 'photoDriveUrl', 'registeredAt', 'updatedAt'],
-    DeletedStudents: ['id', 'studentName', 'phone', 'adharNumber', 'email', 'fatherName', 'parentPhone', 'gender', 'dob', 'joinDate', 'address', 'examPreparation', 'currentSection', 'currentSeat', 'seatType', 'status', 'paymentStatus', 'dueAmount', 'photoDriveUrl', 'registeredAt', 'updatedAt', 'deletedAt', 'deletedBy', 'deleteReason'],
-    Payments: ['paymentId', 'studentId', 'studentName', 'paymentDate', 'month', 'year', 'amount', 'paidAmount', 'paymentStatus', 'mode', 'receivedBy', 'remarks', 'createdAt', 'updatedAt'],
+    Students: ['id', 'studentName', 'phone', 'adharNumber', 'email', 'fatherName', 'parentPhone', 'gender', 'dob', 'joinDate', 'monthlyFee', 'nextDueDate', 'address', 'examPreparation', 'currentSection', 'currentSeat', 'seatType', 'status', 'paymentStatus', 'dueAmount', 'photoDriveUrl', 'registeredAt', 'updatedAt'],
+    DeletedStudents: ['id', 'studentName', 'phone', 'adharNumber', 'email', 'fatherName', 'parentPhone', 'gender', 'dob', 'joinDate', 'monthlyFee', 'nextDueDate', 'address', 'examPreparation', 'currentSection', 'currentSeat', 'seatType', 'status', 'paymentStatus', 'dueAmount', 'photoDriveUrl', 'registeredAt', 'updatedAt', 'deletedAt', 'deletedBy', 'deleteReason'],
+    Payments: ['paymentId', 'studentId', 'studentName', 'fatherName', 'joinDate', 'currentSection', 'currentSeat', 'paymentDate', 'month', 'year', 'amount', 'paidAmount', 'dueAmount', 'nextDueDate', 'paymentStatus', 'mode', 'receivedBy', 'remarks', 'createdAt', 'updatedAt'],
     Bookings: ['bookingId', 'name', 'phone', 'email', 'purpose', 'notes', 'requestedSection', 'requestedSeatType', 'requestedDate', 'status', 'approvedBy', 'rejectedReason', 'createdAt', 'updatedAt'],
     Notices: ['id', 'title', 'content', 'expiryDate', 'createdAt', 'updatedAt'],
     Admins: ['id', 'username', 'password', 'role', 'createdAt'],
@@ -561,11 +648,16 @@ function getOrCreateSheet(name) {
     return sheet;
   }
   if (headers.length) {
-    const existing = sheet.getRange(1, 1, 1, headers.length).getValues()[0] || [];
+    const lastColumn = Math.max(sheet.getLastColumn(), 1);
+    const existing = sheet.getRange(1, 1, 1, lastColumn).getValues()[0] || [];
     const normalized = existing.map(h => String(h || '').trim());
-    if (normalized.length !== headers.length || normalized.some((h, i) => h !== headers[i])) {
-      sheet.clearContents();
+    if (!normalized.some(Boolean)) {
       sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    } else {
+      const missingHeaders = headers.filter(header => !normalized.includes(header));
+      if (missingHeaders.length) {
+        sheet.getRange(1, lastColumn + 1, 1, missingHeaders.length).setValues([missingHeaders]);
+      }
     }
   }
   return sheet;
