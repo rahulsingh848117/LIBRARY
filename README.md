@@ -1,53 +1,46 @@
-﻿# S P Library Website
+# 📚 S P Library Website
 
-This project contains a polished website for **S P Library** with a modern **Bhagwa-themed landing page** and a dedicated **fee calculator / booking page**.
+A modern and responsive website for **S P Library**, Darbhanga, Bihar. The website is designed to provide students with quick access to library information, study shifts, booking, notices, and contact details through a clean and user-friendly interface.
 
-## 📁 Files
+## ✨ Features
 
-- `index.html` — Landing page with hero, features, shift plans, location map, and contact information.
-- `calculator.html` — Fee calculator and seat booking page with local storage cart support.
-- `styles.css` — Shared responsive styling for both pages.
-- `script.js` — Calculator and booking logic used by `calculator.html`.
-- `README.md` — Project documentation.
+- Responsive design for desktop and mobile
+- Modern and clean UI
+- Library information and facilities
+- Study shift details
+- Online booking page
+- Admin login page
+- Interactive location map
+- Multiple theme options
 
-## ✨ What Changed
-
-- Converted the design into a normal website layout with sections and scrollable landing page.
-- Added a second page for the calculator and booking workflow.
-- Improved the header, hero, feature cards, shift plan section, and map presentation.
-- Made sure the interface is mobile-friendly and visually polished.
-
-## 🚀 How to Use
-
-1. Open `index.html` in your browser to view the home page.
-2. Click **Calculate Fee** to go to `calculator.html`.
-3. On `calculator.html`, select a shift, duration, and optional discount.
-4. Add plans to the booking cart. Data is stored locally in the browser.
-
-## 💻 Tech Stack
+## 🛠️ Built With
 
 - HTML5
 - CSS3
-- Vanilla JavaScript
-- Browser `localStorage` for seat booking persistence
+- JavaScript
 
-## 📌 Notes
+## 📂 Project Structure
 
-- **No backend** — all booking storage is local to the browser.
-- **Currency** is set to INR (₹).
-- You can replace the logo placeholder in either page by editing the `<div class="logo-box">` element.
-- The map section includes a Google Maps embed and direct external link.
+```
+├── index.html
+├── booking.html
+├── admin-login.html
+├── student-registration.html
+├── styles.css
+├── script.js
+└── assets/
+```
 
-## 🔧 To Customize
+## 🚀 Getting Started
 
-- Update colors in `styles.css` under the `:root` variables.
-- Update shift options inside the `select#shift-select` element in `calculator.html`.
-- Update contact details and address in both HTML pages as needed.
+1. Clone the repository.
+2. Open the project folder.
+3. Launch `index.html` in your browser.
 
-## 📞 Contact
+## 📍 About
 
-- Phone: +91 98354 40799
-- Alternate: +91 94710 74457
+**S P Library** is a self-study library located in **Darbhanga, Bihar**, providing a comfortable and focused learning environment for students preparing for competitive exams and academic success.
 
-**Tagline:** आज पढोगे, कल चढोगे!!
-# LIBRARY
+## 📄 License
+
+This project is intended for educational and institutional use.
