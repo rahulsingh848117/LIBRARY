@@ -225,14 +225,6 @@ function handleCreateStudent(student) {
 
     const nextId = lastId + 1;
 
-    const requestedSection = String(student.currentSection || '').trim().toUpperCase();
-    const requestedSeat = String(student.currentSeat || '').trim();
-    const isFixedSeat = String(student.seatType || '').trim().toLowerCase() === 'fixed';
-    if (isFixedSeat && requestedSection && requestedSeat) {
-      const assigned = rows.find(row => String(row.currentSection || '').trim().toUpperCase() === requestedSection && String(row.currentSeat || '').trim() === requestedSeat);
-      if (assigned) return { error: `Fixed seat ${requestedSection}-${requestedSeat} is already assigned to ${assigned.studentName || 'another student'}.` };
-    }
-
     const newStudent = {
       id: String(nextId),
       studentName: student.studentName || '',
@@ -245,7 +237,6 @@ function handleCreateStudent(student) {
       dob: student.dob || '',
       joinDate: student.joinDate || '',
       monthlyFee: String(student.monthlyFee || ''),
-      nextDueDate: student.nextDueDate || '',
       address: student.address || '',
       examPreparation: student.examPreparation || '',
       currentSection: student.currentSection || '',
@@ -278,19 +269,11 @@ function handleUpdateStudent(student) {
   const index = rows.findIndex(row => String(row.id) === String(student.id));
   if (index === -1) return { error: 'Student not found' };
 
-  const updatedStudent = {
+  rows[index] = {
     ...rows[index],
     ...student,
     updatedAt: new Date().toISOString(),
   };
-  const requestedSection = String(updatedStudent.currentSection || '').trim().toUpperCase();
-  const requestedSeat = String(updatedStudent.currentSeat || '').trim();
-  const isFixedSeat = String(updatedStudent.seatType || '').trim().toLowerCase() === 'fixed';
-  if (isFixedSeat && requestedSection && requestedSeat) {
-    const assigned = rows.find((row, rowIndex) => rowIndex !== index && String(row.currentSection || '').trim().toUpperCase() === requestedSection && String(row.currentSeat || '').trim() === requestedSeat);
-    if (assigned) return { error: `Fixed seat ${requestedSection}-${requestedSeat} is already assigned to ${assigned.studentName || 'another student'}.` };
-  }
-  rows[index] = updatedStudent;
   writeRows(sheet, rows);
   return { student: rows[index] };
 }
@@ -360,11 +343,9 @@ function handleCreatePayment(payment) {
   const rows = getRows(sheet);
   const requestedMonth = parseInt(payment.month, 10);
   const requestedYear = parseInt(payment.year, 10);
-  const dateValue = payment.paymentDate
-    ? new Date(payment.paymentDate)
-    : requestedMonth >= 1 && requestedMonth <= 12 && requestedYear >= 2020
-      ? new Date(requestedYear, requestedMonth - 1, 1)
-      : new Date();
+  const dateValue = requestedMonth >= 1 && requestedMonth <= 12 && requestedYear >= 2020
+    ? new Date(requestedYear, requestedMonth - 1, 1)
+    : payment.paymentDate ? new Date(payment.paymentDate) : new Date();
   const amount = parseNumber(payment.amount);
   const paidAmount = parseNumber(payment.paidAmount);
   const newPayment = {
@@ -381,7 +362,6 @@ function handleCreatePayment(payment) {
     amount: String(amount),
     paidAmount: String(paidAmount),
     dueAmount: String(parseNumber(payment.dueAmount)),
-    nextDueDate: payment.nextDueDate || '',
     paymentStatus: payment.paymentStatus || (paidAmount >= amount ? 'Paid' : 'Due'),
     mode: payment.mode || '',
     receivedBy: payment.receivedBy || '',
@@ -391,7 +371,7 @@ function handleCreatePayment(payment) {
   };
   rows.push(newPayment);
   writeRows(sheet, rows);
-  if (newPayment.nextDueDate) updateStudentNextDueDate(newPayment.studentId, newPayment.nextDueDate);
+  updateStudentBalanceAfterPayment(newPayment.studentId);
   return { payment: newPayment };
 }
 
@@ -424,17 +404,6 @@ function updateStudentBalanceAfterPayment(studentId) {
   };
   writeRows(studentsSheet, students);
   return students[index];
-}
-
-function updateStudentNextDueDate(studentId, nextDueDate) {
-  if (!studentId || !nextDueDate) return null;
-  const sheet = getOrCreateSheet('Students');
-  const rows = getRows(sheet);
-  const index = rows.findIndex(row => String(row.id) === String(studentId));
-  if (index === -1) return null;
-  rows[index] = { ...rows[index], nextDueDate, updatedAt: new Date().toISOString() };
-  writeRows(sheet, rows);
-  return rows[index];
 }
 
 function parseDateOnly(value) {
@@ -628,9 +597,9 @@ function getPhotoFolder() {
 
 function getHeadersForSheet(name) {
   const headers = {
-    Students: ['id', 'studentName', 'phone', 'adharNumber', 'email', 'fatherName', 'parentPhone', 'gender', 'dob', 'joinDate', 'monthlyFee', 'nextDueDate', 'address', 'examPreparation', 'currentSection', 'currentSeat', 'seatType', 'status', 'paymentStatus', 'dueAmount', 'photoDriveUrl', 'registeredAt', 'updatedAt'],
-    DeletedStudents: ['id', 'studentName', 'phone', 'adharNumber', 'email', 'fatherName', 'parentPhone', 'gender', 'dob', 'joinDate', 'monthlyFee', 'nextDueDate', 'address', 'examPreparation', 'currentSection', 'currentSeat', 'seatType', 'status', 'paymentStatus', 'dueAmount', 'photoDriveUrl', 'registeredAt', 'updatedAt', 'deletedAt', 'deletedBy', 'deleteReason'],
-    Payments: ['paymentId', 'studentId', 'studentName', 'fatherName', 'joinDate', 'currentSection', 'currentSeat', 'paymentDate', 'month', 'year', 'amount', 'paidAmount', 'dueAmount', 'nextDueDate', 'paymentStatus', 'mode', 'receivedBy', 'remarks', 'createdAt', 'updatedAt'],
+    Students: ['id', 'studentName', 'phone', 'adharNumber', 'email', 'fatherName', 'parentPhone', 'gender', 'dob', 'joinDate', 'monthlyFee', 'address', 'examPreparation', 'currentSection', 'currentSeat', 'seatType', 'status', 'paymentStatus', 'dueAmount', 'photoDriveUrl', 'registeredAt', 'updatedAt'],
+    DeletedStudents: ['id', 'studentName', 'phone', 'adharNumber', 'email', 'fatherName', 'parentPhone', 'gender', 'dob', 'joinDate', 'monthlyFee', 'address', 'examPreparation', 'currentSection', 'currentSeat', 'seatType', 'status', 'paymentStatus', 'dueAmount', 'photoDriveUrl', 'registeredAt', 'updatedAt', 'deletedAt', 'deletedBy', 'deleteReason'],
+    Payments: ['paymentId', 'studentId', 'studentName', 'fatherName', 'joinDate', 'currentSection', 'currentSeat', 'paymentDate', 'month', 'year', 'amount', 'paidAmount', 'dueAmount', 'paymentStatus', 'mode', 'receivedBy', 'remarks', 'createdAt', 'updatedAt'],
     Bookings: ['bookingId', 'name', 'phone', 'email', 'purpose', 'notes', 'requestedSection', 'requestedSeatType', 'requestedDate', 'status', 'approvedBy', 'rejectedReason', 'createdAt', 'updatedAt'],
     Notices: ['id', 'title', 'content', 'expiryDate', 'createdAt', 'updatedAt'],
     Admins: ['id', 'username', 'password', 'role', 'createdAt'],

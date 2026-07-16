@@ -62,7 +62,7 @@ button {
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
     position: sticky;
-    top: 10px;
+    top: 1px;
     z-index: 50;
     border-bottom: 1px solid var(--theme-border);
     padding: 12px 0;
@@ -233,9 +233,9 @@ button {
     }
 
     .nav {
-        display: none;
+        display: none !important;
         position: fixed;
-        top: 90px;
+        top: 100%;
         left: 0;
         right: 0;
         background: var(--white);
@@ -250,7 +250,7 @@ button {
     }
 
     .nav.active {
-        display: flex;
+        display: flex !important;
     }
 
     .nav a {

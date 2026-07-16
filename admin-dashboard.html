@@ -48,10 +48,10 @@
         .seat-occupants { display:grid; grid-template-columns:repeat(var(--occupant-count, 1), minmax(0,1fr)); gap:8px; }
         .seat-occupant { min-width:0; padding:6px; border-radius:8px; background:rgba(255,255,255,.48); }
         .seat-box.shared .seat-occupant { border:1px solid rgba(106,27,154,.16); }
-        .seat-box .seat-photo { width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,.8); display:block; margin:0 auto 6px; }
+        .seat-box .seat-photo { width:52px; height:52px; border-radius:8px; object-fit:cover; border:2px solid rgba(255,255,255,.8); display:block; margin:0 auto 6px; }
         .seat-matrix-photos .seat-box { min-height:190px; }
-        .seat-matrix-photos .seat-photo { width:82px; height:82px; border-width:3px; }
-        .seat-matrix-photos .seat-list-item .seat-photo { width:72px; height:72px; }
+        .seat-matrix-photos .seat-photo { width:104px; height:104px; border-width:3px; border-radius:8px; }
+        .seat-matrix-photos .seat-list-item .seat-photo { width:92px; height:92px; }
         .seat-list { display: flex; flex-direction: column; gap: 10px; }
         .seat-list-item { border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 12px; background: #fff; display: flex; gap: 12px; align-items: center; }
         .seat-list-item.reserved { border-color: #2e7d32; background: rgba(76,175,80,0.08); }
@@ -112,7 +112,7 @@
             .seat-box.shared { grid-column:span var(--seat-span,2); }
             .seat-box .seat-number { font-size:11px; }
             .seat-box .seat-student, .seat-box .seat-meta { font-size:9px; }
-            .seat-matrix-photos .seat-photo { width:48px; height:48px; }
+            .seat-matrix-photos .seat-photo { width:58px; height:58px; border-radius:5px; }
         }
         @media (max-width: 768px) { 
             .admin-nav-tabs { flex-wrap: wrap; }
@@ -448,18 +448,20 @@
                             <input type="text" class="filter-input" id="filter-deleted-seat" placeholder="e.g. 12">
                         </div>
                         <button class="btn-filter" onclick="applyDeletedFilters()">Apply Filters</button>
+                        <button class="btn-small btn-secondary" id="toggle-deleted-photos-btn" onclick="toggleDeletedStudentPhotos()">🖼️ Show Photos</button>
                         <button class="btn-export" onclick="exportDeletedStudentsData()">📥 Export</button>
                         <button class="btn-print" onclick="printCurrentView('deleted')">🖨️ Print</button>
                     </div>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Section</th>
-                                <th>Seat</th>
-                                <th>Status</th>
-                                <th>Deleted On</th>
+                                <th onclick="sortDeletedStudents('id')">ID <span class="sort-indicator">↕️</span></th>
+                                <th id="deleted-photo-heading" style="display:none;width:58px;min-width:58px;cursor:default;">Photo</th>
+                                <th onclick="sortDeletedStudents('studentName')">Name <span class="sort-indicator">↕️</span></th>
+                                <th onclick="sortDeletedStudents('phone')">Phone <span class="sort-indicator">↕️</span></th>
+                                <th onclick="sortDeletedStudents('currentSeat')">Seat <span class="sort-indicator">↕️</span></th>
+                                <th onclick="sortDeletedStudents('status')">Status <span class="sort-indicator">↕️</span></th>
+                                <th onclick="sortDeletedStudents('deletedAt')">Deleted On <span class="sort-indicator">↕️</span></th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -608,6 +610,10 @@
                 <h1>📋 Bookings & Inquiries</h1>
                 
                 <div class="dashboard-section">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 16px;margin-bottom:18px;border-radius:10px;background:#f5f7ff;border-left:4px solid #667eea;">
+                        <div><strong>Public Booking</strong><div id="booking-status-message" style="font-size:.85rem;color:#666;margin-top:3px;">Checking availability…</div></div>
+                        <button type="button" id="booking-status-toggle" class="btn-small btn-secondary" onclick="toggleBookingAvailability()" disabled>Loading…</button>
+                    </div>
                     <div class="filter-toolbar">
                         <div class="filter-group">
                             <label class="filter-label">Status</label>

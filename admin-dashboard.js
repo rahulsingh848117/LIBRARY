@@ -201,9 +201,9 @@ function printSeatMatrix() {
     const selected = seatMatrixSection === 'all' ? 'All Sections' : `Section ${seatMatrixSection}`;
     const printWindow = window.open('', '_blank');
     if (!printWindow) return alert('Please allow pop-ups to print the Seat Matrix.');
-    printWindow.onload = () => printWindow.print();
-    printWindow.document.write(`<!DOCTYPE html><html><head><title>Seat Matrix - ${selected}</title><style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#222;font-size:10px}h1{margin:0;font-size:20px}.print-info{margin:5px 0 14px;color:#555}h3{margin:14px 0 7px;font-size:14px}.seat-matrix-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.seat-list{display:flex;flex-direction:column;gap:6px}.seat-box,.seat-list-item{border:1px solid #bbb;border-radius:7px;padding:6px;background:#fff;break-inside:avoid;page-break-inside:avoid}.seat-box.reserved,.seat-list-item.reserved{border-color:#2e7d32;background:#eff9f0}.seat-box.empty,.seat-list-item.empty{border-color:#c62828;background:#fff2f2}.seat-box.shared,.seat-list-item.shared{border-color:#6a1b9a;background:#f7effb;grid-column:span var(--seat-span,2)}.seat-number{font-size:11px;font-weight:bold;margin-bottom:3px}.seat-student{font-size:10px;font-weight:bold}.seat-meta{color:#555;font-size:9px;line-height:1.25}.seat-occupants{display:grid;grid-template-columns:repeat(var(--occupant-count,1),minmax(0,1fr));gap:4px;margin-top:4px}.seat-occupant{min-width:0;padding:3px;border-radius:4px;background:rgba(255,255,255,.7)}.seat-photo{width:48px;height:48px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 3px}.seat-matrix-photos .seat-box{min-height:125px}</style></head><body><h1>S P Library — Seat Matrix</h1><div class="print-info">${selected} · Printed ${new Date().toLocaleString()}</div>${matrix.innerHTML}</body></html>`);
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Seat Matrix - ${selected}</title><style>@page{margin:10mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#222;font-size:10px}.print-action{margin:0 0 14px;padding:10px 18px;background:#2563eb;color:#fff;border:0;border-radius:6px;font-weight:700;cursor:pointer}h1{margin:0;font-size:20px}.print-info{margin:5px 0 14px;color:#555}h3{margin:14px 0 7px;font-size:14px}.seat-matrix-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.seat-list{display:flex;flex-direction:column;gap:6px}.seat-box,.seat-list-item{border:1px solid #bbb;border-radius:7px;padding:6px;background:#fff;break-inside:avoid;page-break-inside:avoid}.seat-box.reserved,.seat-list-item.reserved{border-color:#2e7d32;background:#eff9f0}.seat-box.empty,.seat-list-item.empty{border-color:#c62828;background:#fff2f2}.seat-box.shared,.seat-list-item.shared{border-color:#6a1b9a;background:#f7effb;grid-column:span var(--seat-span,2)}.seat-number{font-size:11px;font-weight:bold;margin-bottom:3px}.seat-student{font-size:10px;font-weight:bold}.seat-meta{color:#555;font-size:9px;line-height:1.25}.seat-occupants{display:grid;grid-template-columns:repeat(var(--occupant-count,1),minmax(0,1fr));gap:4px;margin-top:4px}.seat-occupant{min-width:0;padding:3px;border-radius:4px;background:rgba(255,255,255,.7)}.seat-photo{width:62px;height:62px;object-fit:cover;border-radius:5px;display:block;margin:0 auto 3px}.seat-matrix-photos .seat-box{min-height:125px}@media print{.print-action{display:none}}</style></head><body><button class="print-action" onclick="window.print()">Open Print Settings</button><h1>S P Library — Seat Matrix</h1><div class="print-info">${selected} · Printed ${new Date().toLocaleString()}</div>${matrix.innerHTML}</body></html>`);
     printWindow.document.close();
+    setTimeout(() => { printWindow.focus(); printWindow.print(); }, 750);
 }
 
 // ==================== Tab Switching ====================
@@ -235,6 +235,8 @@ let paymentFiltersApplied = false;
 let allBookings = [];
 let allNotices = [];
 let allDeletedStudents = [];
+let deletedFiltersApplied = false;
+let showDeletedStudentPhotos = false;
 let showStudentPhotos = false;
 let selectedStudentPhotoData = '';
 let currentPrintData = {
@@ -383,6 +385,11 @@ async function loadStudentsData() {
 
 async function loadDeletedStudentsData() {
     try {
+        if (!deletedFiltersApplied) {
+            const tbody = document.getElementById('deleted-students-tbody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#777;">Choose filters and click Apply Filters to load deleted student records.</td></tr>';
+            return;
+        }
         if (canUseRemoteApi()) {
             try {
                 const response = await apiClient.request('listDeletedStudents', {}, { method: 'POST' });
@@ -565,22 +572,80 @@ function renderDeletedStudentsTable(students) {
     currentPrintData.deletedStudents = Array.isArray(students) ? students : [];
     tbody.innerHTML = '';
     if (!students || students.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px; color: #999;">No deleted students found</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="${showDeletedStudentPhotos ? 8 : 7}" style="text-align:center; padding: 40px; color: #999;">No deleted students found</td></tr>`;
         return;
     }
     students.forEach(student => {
         const row = document.createElement('tr');
+        const seat = [student.currentSection || student.section, student.currentSeat || student.seatNumber || student.seatAllocated].filter(Boolean).join('') || '—';
+        const photoCell = showDeletedStudentPhotos ? `<td style="width:58px;min-width:58px;padding-right:4px;">${studentPhotoMarkup(student)}</td>` : '';
         row.innerHTML = `
+            <td><strong>${student.id || '—'}</strong></td>
+            ${photoCell}
             <td><strong>${student.studentName || '—'}</strong></td>
             <td>${student.phone || '—'}</td>
-            <td>${student.currentSection || '—'}</td>
-            <td>${student.currentSeat || '—'}</td>
+            <td>${seat}</td>
             <td><span class="badge ${student.status === 'Active' ? 'badge-success' : 'badge-danger'}">${student.status || '—'}</span></td>
             <td>${student.deletedAt || '—'}</td>
             <td><button class="btn-small btn-primary" onclick="restoreStudent('${student.id}')">Restore</button></td>
         `;
         tbody.appendChild(row);
     });
+}
+
+async function applyDeletedFilters() {
+    if (!canUseRemoteApi()) return alert('Google Sheets API is not available.');
+    try {
+        const response = await apiClient.request('listDeletedStudents', {}, { method: 'POST' });
+        allDeletedStudents = response.deletedStudents || [];
+        deletedFiltersApplied = true;
+    } catch (error) {
+        console.error('Could not load deleted students:', error);
+        return alert(`Could not load deleted students: ${error.message}`);
+    }
+    const query = (document.getElementById('search-deleted')?.value || '').toLowerCase().trim();
+    const section = document.getElementById('filter-deleted-section')?.value || '';
+    const seat = (document.getElementById('filter-deleted-seat')?.value || '').trim();
+    let rows = Array.isArray(allDeletedStudents) ? allDeletedStudents.slice() : [];
+    if (query) rows = rows.filter(student => (student.studentName || '').toLowerCase().includes(query) || String(student.phone || '').includes(query) || String(student.adharNumber || '').includes(query) || String(student.id || '').includes(query));
+    if (section) rows = rows.filter(student => String(student.currentSection || student.section || '').toUpperCase() === String(section).toUpperCase());
+    if (seat) rows = rows.filter(student => String(student.currentSeat || student.seatNumber || student.seatAllocated || '').includes(seat));
+    renderDeletedStudentsTable(rows);
+}
+
+function toggleDeletedStudentPhotos() {
+    if (!deletedFiltersApplied) return alert('Click Apply Filters before showing deleted student photos.');
+    showDeletedStudentPhotos = !showDeletedStudentPhotos;
+    const button = document.getElementById('toggle-deleted-photos-btn');
+    const heading = document.getElementById('deleted-photo-heading');
+    if (button) button.textContent = showDeletedStudentPhotos ? '🖼️ Hide Photos' : '🖼️ Show Photos';
+    if (heading) heading.style.display = showDeletedStudentPhotos ? 'table-cell' : 'none';
+    renderDeletedStudentsTable(currentPrintData.deletedStudents || []);
+}
+
+function sortDeletedStudents(key) {
+    if (!deletedFiltersApplied) return alert('Click Apply Filters before sorting deleted student records.');
+    const rows = (currentPrintData.deletedStudents || []).slice();
+    const direction = window.deletedStudentSort?.key === key ? -window.deletedStudentSort.direction : 1;
+    window.deletedStudentSort = { key, direction };
+    rows.sort((a, b) => {
+        const valueA = key === 'currentSeat' ? [a.currentSection || a.section, a.currentSeat || a.seatNumber || a.seatAllocated].filter(Boolean).join('') : (a[key] || '');
+        const valueB = key === 'currentSeat' ? [b.currentSection || b.section, b.currentSeat || b.seatNumber || b.seatAllocated].filter(Boolean).join('') : (b[key] || '');
+        return String(valueA).localeCompare(String(valueB), undefined, { numeric:true }) * direction;
+    });
+    renderDeletedStudentsTable(rows);
+}
+
+function exportDeletedStudentsData() {
+    if (!deletedFiltersApplied) return alert('Click Apply Filters before exporting deleted student records.');
+    const rows = currentPrintData.deletedStudents || [];
+    const headers = ['ID', 'Name', 'Phone', 'Seat', 'Status', 'Deleted On'];
+    const csv = [headers, ...rows.map(student => [student.id || '', student.studentName || '', student.phone || '', [student.currentSection || student.section, student.currentSeat || student.seatNumber || student.seatAllocated].filter(Boolean).join(''), student.status || '', student.deletedAt || ''])]
+        .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = `deleted-students-${new Date().toISOString().slice(0, 10)}.csv`; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
 }
 
 function formatPaymentPeriod(payment) {
@@ -925,6 +990,10 @@ try {
     window.setSeatMatrixSection = setSeatMatrixSection;
     window.toggleSeatMatrixPhotos = toggleSeatMatrixPhotos;
     window.printSeatMatrix = printSeatMatrix;
+    window.applyDeletedFilters = applyDeletedFilters;
+    window.toggleDeletedStudentPhotos = toggleDeletedStudentPhotos;
+    window.sortDeletedStudents = sortDeletedStudents;
+    window.exportDeletedStudentsData = exportDeletedStudentsData;
     window.deleteStudent = async function(id) {
         if (!id) return;
         if (!confirm('Delete this student record?')) return;
